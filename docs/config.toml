@@ -1,0 +1,18 @@
+baseurl = "https://setup.inaccel.com/coral-api"
+pygmentscodefences = true
+theme = "github.com/bep/docuapi"
+title = "InAccel Coral API"
+[params]
+  search = true
+  [[params.language_tabs]]
+    key = "c"
+    name = "C (core)"
+  [[params.language_tabs]]
+    key = "cpp"
+    name = "C++"
+  [[params.language_tabs]]
+    key = "java"
+    name = "Java"
+  [[params.language_tabs]]
+    key = "python"
+    name = "Python"
