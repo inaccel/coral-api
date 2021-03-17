@@ -1,0 +1,9 @@
+version: '3'
+services:
+  make:
+    entrypoint: make
+    image: inaccel/buildpack-deps:grpc
+    user: ${USER:-root}:${GROUP:-root}
+    volumes:
+    - .:/workspace
+    working_dir: /workspace

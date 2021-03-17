@@ -1,0 +1,47 @@
+syntax = 'proto3';
+
+package inaccel;
+
+option optimize_for = LITE_RUNTIME;
+
+service Coral {
+	rpc Serve(Request) returns (Response) {}
+}
+
+message Request {
+	string accelerator = 1;
+	Arguments arguments = 2;
+	Metadata metadata = 3;
+}
+
+message Arguments {
+	repeated Argument argument = 1;
+}
+
+message Argument {
+	oneof argument {
+		Array array = 1;
+		Scalar scalar = 2;
+	}
+}
+
+message Array {
+	uint64 context = 1;
+	string id = 2;
+	uint64 offset = 3;
+	uint64 size = 4;
+	uint32 version = 5;
+}
+
+message Scalar {
+	bytes bytes = 1;
+}
+
+message Metadata {
+	string self = 1;
+	uint64 stamp = 2;
+}
+
+message Response {
+	map<string, string> messages = 1;
+}
