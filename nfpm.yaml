@@ -1,0 +1,26 @@
+arch: amd64
+description: Enterprise-Grade Accelerator Orchestration
+homepage: https://inaccel.com
+license: Apache-2.0
+maintainer: InAccel <info@inaccel.com>
+name: coral-api
+overrides:
+  deb:
+    contents:
+    - dst: /usr/include/inaccel
+      src: src/main/c/headers
+    - dst: /usr/include/inaccel
+      src: src/main/cpp/headers
+    - dst: /usr/lib/libcoral-api.so
+      src: libcoral-api.so
+  rpm:
+    contents:
+    - dst: /usr/include/inaccel
+      src: src/main/c/headers
+    - dst: /usr/include/inaccel
+      src: src/main/cpp/headers
+    - dst: /usr/lib64/libcoral-api.so
+      src: libcoral-api.so
+release: ${RELEASE}
+vendor: InAccel
+version: 2.0.0
