@@ -19,9 +19,9 @@ public class Example {
 
 		System.out.println(request);
 
-		Future<Integer> response = InAccel.submit(request);
+		Future<Void> response = InAccel.submit(request);
 
-		System.out.println(response.get());
+		response.get();
 	}
 
 }

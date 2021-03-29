@@ -213,7 +213,7 @@ inaccel_request inaccel_request_create(const char *accelerator) {
 	return request;
 }
 
-int __str(std::stringstream &string, const inaccel_request request) {
+int __str_request(std::stringstream &string, const inaccel_request request) {
 	string << "---" << std::endl << request->grpc.accelerator() << ":";
 
 	inaccel::Arguments __arguments = request->grpc.arguments();
@@ -267,7 +267,7 @@ int inaccel_request_fprint(FILE *stream, const inaccel_request request) {
 	try {
 		std::stringstream string;
 
-		int error = __str(string, request);
+		int error = __str_request(string, request);
 		if (error) {
 			return error;
 		}
@@ -297,7 +297,7 @@ int inaccel_request_snprint(char *s, size_t n, const inaccel_request request) {
 	try {
 		std::stringstream string;
 
-		int error = __str(string, request);
+		int error = __str_request(string, request);
 		if (error) {
 			return error;
 		}
@@ -354,6 +354,110 @@ inaccel_response inaccel_response_create() {
 	return response;
 }
 
+int __str_response(std::stringstream &string, const inaccel_response response) {
+	switch (response->status.error_code()) {
+	case grpc::StatusCode::OK:
+		string << "Ok";
+
+		break;
+	case grpc::StatusCode::CANCELLED:
+		string << "Cancelled";
+
+		break;
+	case grpc::StatusCode::UNKNOWN:
+		string << "Unknown";
+
+		break;
+	case grpc::StatusCode::INVALID_ARGUMENT:
+		string << "Invalid argument";
+
+		break;
+	case grpc::StatusCode::DEADLINE_EXCEEDED:
+		string << "Deadline exceeded";
+
+		break;
+	case grpc::StatusCode::NOT_FOUND:
+		string << "Not found";
+
+		break;
+	case grpc::StatusCode::ALREADY_EXISTS:
+		string << "Already exists";
+
+		break;
+	case grpc::StatusCode::PERMISSION_DENIED:
+		string << "Permission denied";
+
+		break;
+	case grpc::StatusCode::UNAUTHENTICATED:
+		string << "Unauthenticated";
+
+		break;
+	case grpc::StatusCode::RESOURCE_EXHAUSTED:
+		string << "Resource exhausted";
+
+		break;
+	case grpc::StatusCode::FAILED_PRECONDITION:
+		string << "Failed precondition";
+
+		break;
+	case grpc::StatusCode::ABORTED:
+		string << "Aborted";
+
+		break;
+	case grpc::StatusCode::OUT_OF_RANGE:
+		string << "Out of range";
+
+		break;
+	case grpc::StatusCode::UNIMPLEMENTED:
+		string << "Unimplemented";
+
+		break;
+	case grpc::StatusCode::INTERNAL:
+		string << "Internal";
+
+		break;
+	case grpc::StatusCode::UNAVAILABLE:
+		string << "Unavailable";
+
+		break;
+	case grpc::StatusCode::DATA_LOSS:
+		string << "Data loss";
+
+		break;
+	case grpc::StatusCode::DO_NOT_USE:
+		string << "Do not use";
+
+		break;
+	}
+
+	if (!response->status.error_message().empty()) {
+		string << ": " << response->status.error_message();
+	}
+
+	return 0;
+}
+
+__attribute__ ((visibility ("default")))
+int inaccel_response_fprint(FILE *stream, const inaccel_response response) {
+	if (!response) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	try {
+		std::stringstream string;
+
+		int error = __str_response(string, response);
+		if (error) {
+			return error;
+		}
+
+		return fprintf(stream, string.str().c_str(), string.str().size());
+	} catch (...) {
+		return -1;
+	}
+}
+
 __attribute__ ((visibility ("default")))
 void inaccel_response_release(inaccel_response response) {
 	if (!response) {
@@ -380,6 +484,27 @@ void inaccel_response_release(inaccel_response response) {
 		__broadcast(&response->cond);
 
 		__unlock(&response->mutex);
+	}
+}
+
+__attribute__ ((visibility ("default")))
+int inaccel_response_snprint(char *s, size_t n, const inaccel_response response) {
+	if (!response) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	try {
+		std::stringstream string;
+
+		int error = __str_response(string, response);
+		if (error) {
+			return error;
+		}
+
+		return snprintf(s, n, string.str().c_str(), string.str().size());
+	} catch (...) {
+		return -1;
 	}
 }
 

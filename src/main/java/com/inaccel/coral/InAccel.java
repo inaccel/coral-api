@@ -92,14 +92,14 @@ public final class InAccel {
 			ByteBuf s = ByteBufAllocator.DEFAULT.directBuffer(n + 1);
 			if (Jni.inaccel_request_snprint(s.memoryAddress(), s.capacity(), c) != n) {
 				throw new RuntimeException(C.library.strerror(Jni.errno()));
-			} else {
-				return s.toString(0, s.capacity(), StandardCharsets.UTF_8);
 			}
+
+			return s.toString(0, s.capacity(), StandardCharsets.UTF_8);
 		}
 
 	}
 
-	public static Future<Integer> submit(Request request) throws RuntimeException {
+	public static Future<Void> submit(Request request) throws RuntimeException {
 		final long cresponse = Jni.inaccel_response_create();
 		if (cresponse == 0) {
 			throw new RuntimeException(C.library.strerror(Jni.errno()));
@@ -124,9 +124,9 @@ public final class InAccel {
 
 		});
 
-		return service.submit(new Callable<Integer>() {
+		return service.submit(new Callable<Void>() {
 
-			public Integer call() throws Exception {
+			public Void call() throws Exception {
 				int error = Jni.inaccel_response_wait(cresponse);
 				if (error == -1) {
 					int errsv = Jni.errno();
@@ -136,13 +136,41 @@ public final class InAccel {
 					service.shutdown();
 
 					throw new RuntimeException(C.library.strerror(errsv));
+				} else if (error != 0) {
+					int n = Jni.inaccel_response_snprint(Jni.NULL, 0, cresponse);
+					if (n < 0) {
+						int errsv = Jni.errno();
+
+						Jni.inaccel_response_release(cresponse);
+
+						service.shutdown();
+
+						throw new RuntimeException(C.library.strerror(errsv));
+					}
+
+					ByteBuf s = ByteBufAllocator.DEFAULT.directBuffer(n + 1);
+					if (Jni.inaccel_response_snprint(s.memoryAddress(), s.capacity(), cresponse) != n) {
+						int errsv = Jni.errno();
+
+						Jni.inaccel_response_release(cresponse);
+
+						service.shutdown();
+
+						throw new RuntimeException(C.library.strerror(errsv));
+					}
+
+					Jni.inaccel_response_release(cresponse);
+
+					service.shutdown();
+
+					throw new Exception(s.toString(0, s.capacity(), StandardCharsets.UTF_8));
 				}
 
 				Jni.inaccel_response_release(cresponse);
 
 				service.shutdown();
 
-				return error;
+				return null;
 			}
 
 		});

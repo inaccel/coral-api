@@ -129,6 +129,17 @@ int inaccel_request_snprint(char *s, size_t n, const inaccel_request request);
 inaccel_response inaccel_response_create();
 
 /**
+ *  @details Write response output to stream.
+ *
+ *  @param stream Pointer to a FILE object that identifies an output stream.
+ *  @param response A valid response object.
+ *  @returns On success, the total number of characters written is returned. If
+ *           a writing error occurs, the error indicator (ferror) is set and a
+ *           negative number is returned.
+ */
+int inaccel_response_fprint(FILE *stream, const inaccel_response response);
+
+/**
  *  @details Decrements the response reference count. The response object is
  *           deleted once the response object is no longer needed by any
  *           submitted task.
@@ -136,6 +147,23 @@ inaccel_response inaccel_response_create();
  *  @param response A valid response object.
  */
 void inaccel_response_release(inaccel_response response);
+
+/**
+ *  @details Write response output to sized buffer.
+ *
+ *  @param s Pointer to a buffer where the resulting C-string is stored. The
+ *           buffer should have a size of at least n characters.
+ *  @param n Maximum number of bytes to be used in the buffer. The generated
+ *           string has a length of at most n-1, leaving space for the
+ *           additional terminating null character.
+ *  @param response A valid response object.
+ *  @returns The number of characters that would have been written if n had been
+ *           sufficiently large, not counting the terminating null character. If
+ *           an encoding error occurs, a negative number is returned. Notice
+ *           that only when this returned value is non-negative and less than n,
+ *           the string has been completely written.
+ */
+int inaccel_response_snprint(char *s, size_t n, const inaccel_response response);
 
 /**
  *  @details Waits on the host thread for the accelerator request represented by

@@ -74,6 +74,13 @@ void Java_com_inaccel_coral_Jni_inaccel_1response_1release(void *_, void *__, lo
 }
 
 __attribute__ ((visibility ("default")))
+int Java_com_inaccel_coral_Jni_inaccel_1response_1snprint(void *_, void *__, long long s, long long n, long long response) {
+	int tmp = inaccel_response_snprint((char *) s, (size_t) n, (const inaccel_response) response);
+	errsv = errno;
+	return tmp;
+}
+
+__attribute__ ((visibility ("default")))
 int Java_com_inaccel_coral_Jni_inaccel_1response_1wait(void *_, void *__, long long response) {
 	int tmp = inaccel_response_wait((inaccel_response) response);
 	errsv = errno;

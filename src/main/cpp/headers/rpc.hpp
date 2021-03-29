@@ -27,13 +27,33 @@
 
 namespace inaccel {
 
+	class exception;
+
 	class request;
 
-	static std::future<int> submit(const inaccel::request &request);
+	static std::future<void> submit(const inaccel::request &request);
+
+	class exception : public std::exception {
+
+	private:
+
+		std::string msg;
+
+	public:
+
+		explicit exception(const std::string &arg) : std::exception(), msg(arg) {}
+
+		virtual ~exception() noexcept {}
+
+		virtual const char *what() const noexcept {
+			return msg.c_str();
+		}
+
+	};
 
 	class request {
 
-		friend std::future<int> submit(const inaccel::request &request);
+		friend std::future<void> submit(const inaccel::request &request);
 
 		friend std::ostream &operator<<(std::ostream &os, const inaccel::request &request);
 
@@ -163,7 +183,7 @@ namespace inaccel {
 
 	};
 
-	static std::future<int> submit(const inaccel::request &request) {
+	static std::future<void> submit(const inaccel::request &request) {
 		inaccel_response cresponse = inaccel_response_create();
 		if (!cresponse) {
 			throw std::runtime_error(std::strerror(errno));
@@ -186,11 +206,31 @@ namespace inaccel {
 				inaccel_response_release(cresponse);
 
 				throw std::runtime_error(std::strerror(errsv));
+			} else if (error) {
+				int n = inaccel_response_snprint(NULL, 0, cresponse);
+				if (n < 0) {
+					int errsv = errno;
+
+					inaccel_response_release(cresponse);
+
+					throw std::runtime_error(std::strerror(errsv));
+				}
+
+				std::vector<char> s(n + 1);
+				if (inaccel_response_snprint(s.data(), s.capacity(), cresponse) != n) {
+					int errsv = errno;
+
+					inaccel_response_release(cresponse);
+
+					throw std::runtime_error(std::strerror(errsv));
+				}
+
+				inaccel_response_release(cresponse);
+
+				throw exception(std::string(s.begin(), s.end()));
 			}
 
 			inaccel_response_release(cresponse);
-
-			return error;
 		}, cresponse);
 	}
 
@@ -203,9 +243,9 @@ namespace inaccel {
 		std::vector<char> s(n + 1);
 		if (inaccel_request_snprint(s.data(), s.capacity(), request.c) != n) {
 			throw std::runtime_error(std::strerror(errno));
-		} else {
-			return os << std::string(s.begin(), s.end());
 		}
+
+		return os << std::string(s.begin(), s.end());
 	}
 
 }

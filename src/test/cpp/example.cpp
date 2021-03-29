@@ -12,7 +12,7 @@ int main() {
 
 	std::cout << request << std::endl;
 
-	std::future<int> response = inaccel::submit(request);
+	std::future<void> response = inaccel::submit(request);
 
-	std::cout << response.get() << std::endl;
+	response.get();
 }

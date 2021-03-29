@@ -32,6 +32,8 @@ final class Jni {
 
 	static native void inaccel_response_release(long response);
 
+	static native int inaccel_response_snprint(long s, long n, long response);
+
 	static native int inaccel_response_wait(long response);
 
 	static native int inaccel_submit(long request, long response);

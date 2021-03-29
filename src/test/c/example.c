@@ -21,7 +21,7 @@ int main() {
 
 	inaccel_submit(request, response);
 
-	printf("%d\n", inaccel_response_wait(response));
+	inaccel_response_wait(response);
 
 	inaccel_response_release(response);
 
