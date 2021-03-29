@@ -22,7 +22,7 @@ public final class InAccel {
 
 		final long c;
 
-		private AtomicInteger index = new AtomicInteger();
+		private int index = 0;
 
 		public Request(String accelerator) throws RuntimeException {
 			c = Jni.inaccel_request_create(ByteBufAllocator.DEFAULT.directBuffer().writeBytes(accelerator.getBytes()).writeByte(0).memoryAddress());
@@ -32,7 +32,7 @@ public final class InAccel {
 		}
 
 		public <T extends Number> Request arg(T value) throws IllegalArgumentException, RuntimeException {
-			return arg(value, index.getAndIncrement());
+			return arg(value, index++);
 		}
 
 		public <T extends Number> Request arg(T value, int index) throws IllegalArgumentException, RuntimeException {
@@ -54,7 +54,7 @@ public final class InAccel {
 		}
 
 		public Request arg(ByteBuf value) throws RuntimeException {
-			return arg(value, index.getAndIncrement());
+			return arg(value, index++);
 		}
 
 		public Request arg(ByteBuf value, int index) throws RuntimeException {

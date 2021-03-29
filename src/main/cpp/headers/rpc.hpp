@@ -61,7 +61,7 @@ namespace inaccel {
 
 		inaccel_request c;
 
-		std::atomic<unsigned> index = ATOMIC_VAR_INIT();
+		unsigned index = 0;
 
 	public:
 
