@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 public final class InAccel {
 
-	public static class Request {
+	public static final class Request {
 
 		final long c;
 
