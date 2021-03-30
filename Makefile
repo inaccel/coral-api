@@ -19,6 +19,7 @@ LDLIBS = -Wl,-Bdynamic -ldl -lpthread -Wl,-Bstatic `pkg-config --libs --static g
 all: libcoral-api.so
 
 lib%.so: $(GRPC)/coral.pb.o $(GRPC)/coral.grpc.pb.o $(CORE_OBJS)
+	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 	@rm -f $(GRPC)/coral.pb.h $(GRPC)/coral.grpc.pb.h
 

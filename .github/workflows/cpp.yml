@@ -1,0 +1,46 @@
+name: cpp
+on: workflow_dispatch
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build library (Core)
+      uses: docker://inaccel/buildpack-deps:grpc
+      with:
+        entrypoint: make
+        args: |
+          libcoral-api.so
+    - name: Package (Debian)
+      uses: docker://goreleaser/nfpm
+      with:
+        args: pkg --packager deb
+    - name: Package (RPM)
+      uses: docker://goreleaser/nfpm
+      env:
+        RELEASE: 1
+      with:
+        args: pkg --packager rpm
+    - name: Publish (Debian) to Cloudsmith
+      uses: cloudsmith-io/action@master
+      with:
+        api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+        command: push
+        format: deb
+        owner: inaccel
+        repo: stable
+        distro: any-distro
+        release: any-version
+        file: '*.deb'
+    - name: Publish (RPM) to Cloudsmith
+      uses: cloudsmith-io/action@master
+      with:
+        api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+        command: push
+        format: rpm
+        owner: inaccel
+        repo: stable
+        distro: any-distro
+        release: any-version
+        file: '*.rpm'
