@@ -1,11 +1,9 @@
 package com.inaccel.coral;
 
-import org.fusesource.hawtjni.runtime.Library;
-
 final class Jni {
 
 	static {
-		new Library("coral-api", Jni.class).load();
+		Library.load("coral-api", Jni.class);
 	}
 
 	static long NULL;
