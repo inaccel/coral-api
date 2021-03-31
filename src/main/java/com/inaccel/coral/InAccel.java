@@ -78,6 +78,7 @@ public final class InAccel {
 		}
 
 		@Override
+		@SuppressWarnings("deprecation")
 		protected void finalize() throws Throwable {
 			Jni.inaccel_request_release(c);
 		}

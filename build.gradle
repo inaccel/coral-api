@@ -1,0 +1,19 @@
+plugins {
+	id 'java'
+}
+
+compileJava.enabled false
+
+task test(overwrite: true, type: JavaExec) {
+	classpath sourceSets.test.runtimeClasspath
+	main 'Example'
+}
+
+repositories {
+	mavenCentral()
+	mavenLocal()
+}
+
+dependencies {
+	implementation 'com.inaccel:coral-api:2.0.0'
+}
