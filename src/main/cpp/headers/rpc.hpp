@@ -27,12 +27,6 @@
 
 namespace inaccel {
 
-	class exception;
-
-	class request;
-
-	static std::future<void> submit(const inaccel::request &request);
-
 	class exception : public std::exception {
 
 	private:
@@ -50,6 +44,12 @@ namespace inaccel {
 		}
 
 	};
+
+	class request;
+
+	static std::future<void> submit(const inaccel::request &request);
+
+	static std::ostream &operator<<(std::ostream &os, const inaccel::request &request);
 
 	class request {
 
@@ -234,7 +234,7 @@ namespace inaccel {
 		}, cresponse);
 	}
 
-	std::ostream &operator<<(std::ostream &os, const inaccel::request &request) {
+	static std::ostream &operator<<(std::ostream &os, const inaccel::request &request) {
 		int n = inaccel_request_snprint(NULL, 0, request.c);
 		if (n < 0) {
 			throw std::runtime_error(std::strerror(errno));
