@@ -53,6 +53,18 @@ namespace inaccel {
 
 	};
 
+	static void *alloc(size_t size) {
+		return inaccel_alloc(size);
+	}
+
+	static void free(void *ptr) {
+		inaccel_free(ptr);
+	}
+
+	static void *realloc(void *ptr, size_t size) {
+		return inaccel_realloc(ptr, size);
+	}
+
 	template<typename T>
 	using vector = std::vector<T, inaccel::allocator<T>>;
 
