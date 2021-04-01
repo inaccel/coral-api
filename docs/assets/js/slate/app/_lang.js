@@ -39,6 +39,8 @@ under the License.
     $(codeSelectorPrefix + language).parentsUntil(".highlight").show();
     $(".lang-specific." + language).show();
 
+    window.recacheHeights();
+
     // scroll to the new location of the position
     if ($(window.location.hash).get(0)) {
       $(window.location.hash).get(0).scrollIntoView(true);
