@@ -57,6 +57,44 @@ static int __access(const void *addr) {
 						slice_t *slice = *__slices;
 
 						if (__from_ptr(cube->page.addr) + slice->page.offset <= __from_ptr(addr) && __from_ptr(addr) < __from_ptr(cube->page.addr) + slice->page.offset + slice->page.size) {
+							if (slice->nlinks) {
+								if (__from_ptr(cube->page.addr) + slice->offset <= __from_ptr(addr) && __from_ptr(addr) < __from_ptr(cube->page.addr) + slice->offset + slice->size) {
+									SYSLOG(__unlock(&cube->mutex));
+
+									errno = EPERM;
+									return -1;
+								}
+							}
+						}
+					}
+					for (__slices = cube->slices; *__slices != NULL; __slices++) {
+						slice_t *slice = *__slices;
+
+						if (__from_ptr(cube->page.addr) + slice->page.offset <= __from_ptr(addr) && __from_ptr(addr) < __from_ptr(cube->page.addr) + slice->page.offset + slice->page.size) {
+							if (slice->nlinks) {
+								if (__from_ptr(cube->page.addr) + slice->offset > __from_ptr(addr) || __from_ptr(addr) >= __from_ptr(cube->page.addr) + slice->offset + slice->size) {
+									while (slice->nlinks) {
+										if (__wait(&slice->cond, &cube->mutex)) {
+											int errsv = errno;
+
+											SYSLOG(__unlock(&cube->mutex));
+
+											errno = errsv;
+											return -1;
+										}
+									}
+
+									SYSLOG(__unlock(&cube->mutex));
+
+									return 0;
+								}
+							}
+						}
+					}
+					for (__slices = cube->slices; *__slices != NULL; __slices++) {
+						slice_t *slice = *__slices;
+
+						if (__from_ptr(cube->page.addr) + slice->page.offset <= __from_ptr(addr) && __from_ptr(addr) < __from_ptr(cube->page.addr) + slice->page.offset + slice->page.size) {
 							if (__unprotect(__to_ptr(__from_ptr(cube->page.addr) + slice->page.offset), slice->page.size)) {
 								int errsv = errno;
 
@@ -118,6 +156,8 @@ int __attach(slice_t *slice) {
 
 	cube->nlinks++;
 
+	slice->nlinks++;
+
 	SYSLOG(__unlock(&cube->mutex));
 
 	return 0;
@@ -148,6 +188,10 @@ int __detach(slice_t *slice) {
 
 	SYSLOG(__lock(&cube->mutex));
 
+	slice->nlinks--;
+
+	SYSLOG(__broadcast(&slice->cond));
+
 	if (!cube->nlinks--) {
 		SYSLOG(__unlink(cube->id));
 
@@ -156,7 +200,7 @@ int __detach(slice_t *slice) {
 			for (__slices = cube->slices; *__slices != NULL; __slices++) {
 				slice_t *slice = *__slices;
 
-				SYSLOG(__destroy_mutex(&slice->mutex));
+				SYSLOG(__destroy_cond(&slice->cond));
 
 				SYSLOG(__free(slice, sizeof(slice_t)));
 			}
@@ -250,7 +294,7 @@ slice_t *__slice(const void *addr, size_t size) {
 					return NULL;
 				}
 
-				if (__init_mutex(&slice->mutex, PROCESS_PRIVATE)) {
+				if (__init_cond(&slice->cond, PROCESS_PRIVATE)) {
 					int errsv = errno;
 
 					SYSLOG(__free(slice, sizeof(slice_t)));
@@ -272,7 +316,7 @@ slice_t *__slice(const void *addr, size_t size) {
 
 					SYSLOG(__unlock(&cube->mutex));
 
-					SYSLOG(__destroy_mutex(&slice->mutex));
+					SYSLOG(__destroy_cond(&slice->cond));
 
 					SYSLOG(__free(slice, sizeof(slice_t)));
 
@@ -403,7 +447,7 @@ void inaccel_free(void *addr) {
 							for (__slices = cube->slices; *__slices != NULL; __slices++) {
 								slice_t *slice = *__slices;
 
-								SYSLOG(__destroy_mutex(&slice->mutex));
+								SYSLOG(__destroy_cond(&slice->cond));
 
 								SYSLOG(__free(slice, sizeof(slice_t)));
 							}

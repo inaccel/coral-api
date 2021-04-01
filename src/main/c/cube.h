@@ -26,8 +26,9 @@ typedef struct __cube {
 } cube_t;
 
 typedef struct __slice {
-	pthread_mutex_t mutex;
+	pthread_cond_t cond;
 
+	int nlinks;
 	struct {
 		off_t offset;
 		size_t size;
