@@ -1,6 +1,8 @@
 #ifndef COLLECTION_H
 #define COLLECTION_H
 
+#include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 void __clear(void ***collection);

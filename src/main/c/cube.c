@@ -1,29 +1,9 @@
-#include <assert.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <assert.h>
-#include <dirent.h>
 #include <errno.h>
-#include <fcntl.h>
-#include <ftw.h>
-#include <limits.h>
-#include <pthread.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/mman.h>
-#include <sys/prctl.h>
-#include <sys/user.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <stdint.h>
 
 #include "collection.h"
 #include "cube.h"
-#include "debug.h"
 #include "self.h"
 #include "shm.h"
 #include "utils.h"
@@ -59,13 +39,13 @@ static int __access(const void *addr) {
 		for (__cubes = cubes; *__cubes != NULL; __cubes++) {
 			cube_t *cube = *__cubes;
 
-			__lock(&cube->mutex);
+			SYSLOG(__lock(&cube->mutex));
 
 			if (__from_ptr(cube->page.addr) <= __from_ptr(addr) && __from_ptr(addr) < __from_ptr(cube->page.addr) + cube->page.size) {
 				UNLOCK;
 
 				if (cube->pid != __process()) {
-					__unlock(&cube->mutex);
+					SYSLOG(__unlock(&cube->mutex));
 
 					errno = EACCES;
 					return -1;
@@ -80,7 +60,7 @@ static int __access(const void *addr) {
 							if (__unprotect(__to_ptr(__from_ptr(cube->page.addr) + slice->page.offset), slice->page.size)) {
 								int errsv = errno;
 
-								__unlock(&cube->mutex);
+								SYSLOG(__unlock(&cube->mutex));
 
 								errno = errsv;
 								return -1;
@@ -91,12 +71,12 @@ static int __access(const void *addr) {
 					}
 				}
 
-				__unlock(&cube->mutex);
+				SYSLOG(__unlock(&cube->mutex));
 
 				return 0;
 			}
 
-			__unlock(&cube->mutex);
+			SYSLOG(__unlock(&cube->mutex));
 		}
 	}
 
@@ -107,16 +87,14 @@ static int __access(const void *addr) {
 }
 
 static void __action(int signal, siginfo_t *info, void *context) {
-	if (__access(info->si_addr)) {
+	if (SYSLOG(__access(info->si_addr))) {
 		(*__default.sa_sigaction)(signal, info, context);
 	}
 }
 
 __attribute__ ((constructor))
 static void __atfork() {
-	if (pthread_atfork(__prepare, __parent, __child)) {
-		PERROR("__atfork: pthread_atfork");
-	}
+	SYSLOG(pthread_atfork(__prepare, __parent, __child));
 }
 
 int __attach(slice_t *slice) {
@@ -127,20 +105,20 @@ int __attach(slice_t *slice) {
 		return -1;
 	}
 
-	__lock(&cube->mutex);
-
-	cube->nlinks++;
+	SYSLOG(__lock(&cube->mutex));
 
 	if (__protect(__to_ptr(__from_ptr(cube->page.addr) + slice->page.offset), slice->page.size)) {
 		int errsv = errno;
 
-		PERROR("__attach: __protect");
+		SYSLOG(__unlock(&cube->mutex));
 
 		errno = errsv;
 		return -1;
 	}
 
-	__unlock(&cube->mutex);
+	cube->nlinks++;
+
+	SYSLOG(__unlock(&cube->mutex));
 
 	return 0;
 }
@@ -151,13 +129,12 @@ static void __child() {
 		for (__cubes = cubes; *__cubes != NULL; __cubes++) {
 			cube_t *cube = *__cubes;
 
-			if (__protect(cube->page.addr, cube->page.size)) {
-				PERROR("__child: __protect");
-			}
+			SYSLOG(__protect(cube->page.addr, cube->page.size));
 
-			__unlock(&cube->mutex);
+			SYSLOG(__unlock(&cube->mutex));
 		}
 	}
+
 	UNLOCK;
 }
 
@@ -169,44 +146,34 @@ int __detach(slice_t *slice) {
 		return -1;
 	}
 
-	__lock(&cube->mutex);
+	SYSLOG(__lock(&cube->mutex));
 
 	if (!cube->nlinks--) {
-		if (__unlink(cube->id)) {
-			PERROR("__detach: __unlink");
-		}
+		SYSLOG(__unlink(cube->id));
 
 		if (cube->slices) {
 			slice_t **__slices;
 			for (__slices = cube->slices; *__slices != NULL; __slices++) {
 				slice_t *slice = *__slices;
 
-				if (__destroy_mutex(&slice->mutex)) {
-					PERROR("inaccel_free: __destroy_mutex");
-				}
+				SYSLOG(__destroy_mutex(&slice->mutex));
 
-				if (__free(slice, sizeof(slice_t))) {
-					PERROR("inaccel_free: __free");
-				}
+				SYSLOG(__free(slice, sizeof(slice_t)));
 			}
 		}
 
 		__clear((void ***) &cube->slices);
 
-		__unlock(&cube->mutex);
+		SYSLOG(__unlock(&cube->mutex));
 
-		if (__destroy_mutex(&cube->mutex)) {
-			PERROR("__detach: __destroy_mutex");
-		}
+		SYSLOG(__destroy_mutex(&cube->mutex));
 
-		if (__free(cube, sizeof(cube_t))) {
-			PERROR("__detach: __free");
-		}
+		SYSLOG(__free(cube, sizeof(cube_t)));
 
 		return 0;
 	}
 
-	__unlock(&cube->mutex);
+	SYSLOG(__unlock(&cube->mutex));
 
 	return 0;
 }
@@ -216,9 +183,7 @@ static void __init() {
 	__inaccel.sa_flags = SA_SIGINFO;
 	__inaccel.sa_sigaction = &__action;
 
-	if (sigaction(SIGSEGV, &__inaccel, &__default)) {
-		PERROR("__init: sigaction");
-	}
+	SYSLOG(sigaction(SIGSEGV, &__inaccel, &__default));
 }
 
 static void __parent() {
@@ -227,20 +192,22 @@ static void __parent() {
 		for (__cubes = cubes; *__cubes != NULL; __cubes++) {
 			cube_t *cube = *__cubes;
 
-			__unlock(&cube->mutex);
+			SYSLOG(__unlock(&cube->mutex));
 		}
 	}
+
 	UNLOCK;
 }
 
 static void __prepare() {
 	LOCK;
+
 	if (cubes) {
 		cube_t **__cubes;
 		for (__cubes = cubes; *__cubes != NULL; __cubes++) {
 			cube_t *cube = *__cubes;
 
-			__lock(&cube->mutex);
+			SYSLOG(__lock(&cube->mutex));
 		}
 	}
 }
@@ -253,13 +220,13 @@ slice_t *__slice(const void *addr, size_t size) {
 		for (__cubes = cubes; *__cubes != NULL; __cubes++) {
 			cube_t *cube = *__cubes;
 
-			__lock(&cube->mutex);
+			SYSLOG(__lock(&cube->mutex));
 
 			if (__from_ptr(cube->page.addr) <= __from_ptr(addr) && __from_ptr(addr) + size <= __from_ptr(cube->page.addr) + cube->page.size) {
 				UNLOCK;
 
 				if (cube->pid != __process()) {
-					__unlock(&cube->mutex);
+					SYSLOG(__unlock(&cube->mutex));
 
 					errno = EACCES;
 					return NULL;
@@ -271,7 +238,7 @@ slice_t *__slice(const void *addr, size_t size) {
 						slice_t *slice = *__slices;
 
 						if (__from_ptr(addr) == __from_ptr(cube->page.addr) + slice->offset && size == slice->size) {
-							__unlock(&cube->mutex);
+							SYSLOG(__unlock(&cube->mutex));
 
 							return slice;
 						}
@@ -280,20 +247,13 @@ slice_t *__slice(const void *addr, size_t size) {
 
 				slice_t *slice = (slice_t *) __alloc(sizeof(slice_t), PRIVATE);
 				if (!slice) {
-					int errsv = errno;
-
-					PERROR("__slice: __alloc");
-
-					errno = errsv;
 					return NULL;
 				}
 
 				if (__init_mutex(&slice->mutex, PROCESS_PRIVATE)) {
 					int errsv = errno;
 
-					if (__free(slice, sizeof(slice_t))) {
-						PERROR("__slice: __free");
-					}
+					SYSLOG(__free(slice, sizeof(slice_t)));
 
 					errno = errsv;
 					return NULL;
@@ -310,28 +270,22 @@ slice_t *__slice(const void *addr, size_t size) {
 				if (__set((void ***) &cube->slices, (void *) slice)) {
 					int errsv = errno;
 
-					__unlock(&cube->mutex);
+					SYSLOG(__unlock(&cube->mutex));
 
-					PERROR("__slice: __set");
+					SYSLOG(__destroy_mutex(&slice->mutex));
 
-					if (__destroy_mutex(&slice->mutex)) {
-						PERROR("__slice: __destroy_mutex");
-					}
-
-					if (__free(slice, sizeof(slice_t))) {
-						PERROR("__slice: __free");
-					}
+					SYSLOG(__free(slice, sizeof(slice_t)));
 
 					errno = errsv;
 					return NULL;
 				}
 
-				__unlock(&cube->mutex);
+				SYSLOG(__unlock(&cube->mutex));
 
 				return slice;
 			}
 
-			__unlock(&cube->mutex);
+			SYSLOG(__unlock(&cube->mutex));
 		}
 	}
 
@@ -349,11 +303,6 @@ void *inaccel_alloc(size_t size) {
 
 	cube_t *cube = (cube_t *) __alloc(sizeof(cube_t), PRIVATE);
 	if (!cube) {
-		int errsv = errno;
-
-		PERROR("inaccel_alloc: __alloc");
-
-		errno = errsv;
 		return NULL;
 	}
 
@@ -362,11 +311,7 @@ void *inaccel_alloc(size_t size) {
 	if (__init_mutex(&cube->mutex, PROCESS_PRIVATE)) {
 		int errsv = errno;
 
-		PERROR("inaccel_alloc: __init_mutex");
-
-		if (__free(cube, sizeof(cube_t))) {
-			PERROR("inaccel_alloc: __free");
-		}
+		SYSLOG(__free(cube, sizeof(cube_t)));
 
 		errno = errsv;
 		return NULL;
@@ -376,15 +321,9 @@ void *inaccel_alloc(size_t size) {
 	if (fd == -1) {
 		int errsv = errno;
 
-		PERROR("inaccel_alloc: __link");
+		SYSLOG(__destroy_mutex(&cube->mutex));
 
-		if (__destroy_mutex(&cube->mutex)) {
-			PERROR("inaccel_alloc: __destroy_mutex");
-		}
-
-		if (__free(cube, sizeof(cube_t))) {
-			PERROR("inaccel_alloc: __free");
-		}
+		SYSLOG(__free(cube, sizeof(cube_t)));
 
 		errno = errsv;
 		return NULL;
@@ -396,27 +335,17 @@ void *inaccel_alloc(size_t size) {
 	if (addr == MAP_FAILED) {
 		int errsv = errno;
 
-		PERROR("inaccel_alloc: __map");
+		SYSLOG(__close(fd));
 
-		if (__close(fd)) {
-			PERROR("inaccel_alloc: __close");
-		}
+		SYSLOG(__destroy_mutex(&cube->mutex));
 
-		if (__destroy_mutex(&cube->mutex)) {
-			PERROR("inaccel_alloc: __destroy_mutex");
-		}
-
-		if (__free(cube, sizeof(cube_t))) {
-			PERROR("inaccel_alloc: __free");
-		}
+		SYSLOG(__free(cube, sizeof(cube_t)));
 
 		errno = errsv;
 		return NULL;
 	}
 
-	if (__close(fd)) {
-		PERROR("inaccel_alloc: close");
-	}
+	SYSLOG(__close(fd));
 
 	cube->page.addr = addr;
 	cube->page.size = size;
@@ -428,23 +357,13 @@ void *inaccel_alloc(size_t size) {
 
 		UNLOCK;
 
-		PERROR("inaccel_alloc: __set");
+		SYSLOG(__unmap(cube->page.addr, cube->page.size));
 
-		if (__unmap(cube->page.addr, cube->page.size)) {
-			PERROR("inaccel_alloc: __unmap");
-		}
+		SYSLOG(__unlink(cube->id));
 
-		if (__unlink(cube->id)) {
-			PERROR("inaccel_alloc: __unlink");
-		}
+		SYSLOG(__destroy_mutex(&cube->mutex));
 
-		if (__destroy_mutex(&cube->mutex)) {
-			PERROR("inaccel_alloc: __destroy_mutex");
-		}
-
-		if (__free(cube, sizeof(cube_t))) {
-			PERROR("inaccel_alloc: __free");
-		}
+		SYSLOG(__free(cube, sizeof(cube_t)));
 
 		errno = errsv;
 		return NULL;
@@ -465,22 +384,18 @@ void inaccel_free(void *addr) {
 			for (__cubes = cubes; *__cubes != NULL; __cubes++) {
 				cube_t *cube = *__cubes;
 
-				__lock(&cube->mutex);
+				SYSLOG(__lock(&cube->mutex));
 
 				if (__from_ptr(cube->page.addr) == __from_ptr(addr)) {
 					__unset((void ***) &cubes, (void *) cube);
 
 					UNLOCK;
 
-					if (__unmap(cube->page.addr, cube->page.size)) {
-						PERROR("inaccel_free: __unmap");
-					}
+					SYSLOG(__unmap(cube->page.addr, cube->page.size));
 
 					if (cube->pid != __process() || !cube->nlinks--) {
 						if (cube->pid == __process()) {
-							if (__unlink(cube->id)) {
-								PERROR("inaccel_free: __unlink");
-							}
+							SYSLOG(__unlink(cube->id));
 						}
 
 						if (cube->slices) {
@@ -488,37 +403,29 @@ void inaccel_free(void *addr) {
 							for (__slices = cube->slices; *__slices != NULL; __slices++) {
 								slice_t *slice = *__slices;
 
-								if (__destroy_mutex(&slice->mutex)) {
-									PERROR("inaccel_free: __destroy_mutex");
-								}
+								SYSLOG(__destroy_mutex(&slice->mutex));
 
-								if (__free(slice, sizeof(slice_t))) {
-									PERROR("inaccel_free: __free");
-								}
+								SYSLOG(__free(slice, sizeof(slice_t)));
 							}
 						}
 
 						__clear((void ***) &cube->slices);
 
-						__unlock(&cube->mutex);
+						SYSLOG(__unlock(&cube->mutex));
 
-						if (__destroy_mutex(&cube->mutex)) {
-							PERROR("inaccel_free: __destroy_mutex");
-						}
+						SYSLOG(__destroy_mutex(&cube->mutex));
 
-						if (__free(cube, sizeof(cube_t))) {
-							PERROR("inaccel_free: __free");
-						}
+						SYSLOG(__free(cube, sizeof(cube_t)));
 
 						return;
 					}
 
-					__unlock(&cube->mutex);
+					SYSLOG(__unlock(&cube->mutex));
 
 					return;
 				}
 
-				__unlock(&cube->mutex);
+				SYSLOG(__unlock(&cube->mutex));
 			}
 		}
 
@@ -540,20 +447,20 @@ void *inaccel_realloc(void *addr, size_t new_size) {
 			for (__cubes = cubes; *__cubes != NULL; __cubes++) {
 				cube_t *cube = *__cubes;
 
-				__lock(&cube->mutex);
+				SYSLOG(__lock(&cube->mutex));
 
 				if (__from_ptr(cube->page.addr) == __from_ptr(addr)) {
 					UNLOCK;
 
 					if (cube->pid != __process()) {
-						__unlock(&cube->mutex);
+						SYSLOG(__unlock(&cube->mutex));
 
 						errno = EACCES;
 						return NULL;
 					}
 
 					if (new_size <= cube->page.size) {
-						__unlock(&cube->mutex);
+						SYSLOG(__unlock(&cube->mutex));
 
 						return cube->page.addr;
 					}
@@ -562,9 +469,7 @@ void *inaccel_realloc(void *addr, size_t new_size) {
 					if (fd == -1) {
 						int errsv = errno;
 
-						PERROR("inaccel_realloc: __reopen");
-
-						__unlock(&cube->mutex);
+						SYSLOG(__unlock(&cube->mutex));
 
 						errno = errsv;
 						return NULL;
@@ -576,31 +481,25 @@ void *inaccel_realloc(void *addr, size_t new_size) {
 					if (new_addr == MAP_FAILED) {
 						int errsv = errno;
 
-						PERROR("inaccel_realloc: __remap");
+						SYSLOG(__close(fd));
 
-						if (__close(fd)) {
-							PERROR("inaccel_realloc: __close");
-						}
-
-						__unlock(&cube->mutex);
+						SYSLOG(__unlock(&cube->mutex));
 
 						errno = errsv;
 						return NULL;
 					}
 
-					if (__close(fd)) {
-						PERROR("inaccel_realloc: __close");
-					}
+					SYSLOG(__close(fd));
 
 					cube->page.addr = new_addr;
 					cube->page.size = new_size;
 
-					__unlock(&cube->mutex);
+					SYSLOG(__unlock(&cube->mutex));
 
 					return cube->page.addr;
 				}
 
-				__unlock(&cube->mutex);
+				SYSLOG(__unlock(&cube->mutex));
 			}
 		}
 

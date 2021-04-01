@@ -7,7 +7,6 @@
 #include <unistd.h>
 
 #include "config.h"
-#include "debug.h"
 #include "self.h"
 #include "utils.h"
 
@@ -21,9 +20,7 @@ static int __mkself(char *path);
 
 __attribute__ ((constructor))
 static void __atfork() {
-	if (pthread_atfork(NULL, NULL, __init)) {
-		PERROR("__atfork: pthread_atfork");
-	}
+	SYSLOG(pthread_atfork(NULL, NULL, __init));
 }
 
 int __close(int fd) {
@@ -33,32 +30,23 @@ int __close(int fd) {
 __attribute__ ((constructor))
 static void __init() {
 	char path[PATH_MAX];
-	if (__mkself(path)) {
-		PERROR("__init: __mkself");
+	if (!SYSLOG(__mkself(path))) {
+		pid_t pid = __process();
+		if (!SYSLOG_NEGATIVE(__fork())) {
+			if (SYSLOG(__session(pid))) {
+				__exit(1);
+			}
 
-		return;
-	}
+			do {
+				__sleep(1);
+			} while (!__srch(pid));
 
-	pid_t pid = __process();
-	switch (__fork()) {
-	case -1:
-		PERROR("__init: __fork");
+			if (SYSLOG(__remove(path))) {
+				__exit(1);
+			}
 
-		return;
-	case 0:
-		if (__session(pid)) {
-			int errsv = errno;
-
-			PERROR("__init: __session");
-
-			__exit(errsv);
+			__exit(0);
 		}
-
-		do {
-			__sleep(1);
-		} while (!__srch(pid));
-
-		__exit(__remove(path));
 	}
 }
 

@@ -6,6 +6,8 @@
 #include <ftw.h>
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
+#include <syslog.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/syscall.h>
@@ -56,7 +58,7 @@ uintptr_t __floor_pagesize(uintptr_t ptr) {
 	return ptr & ~(sysconf(_SC_PAGESIZE) - 1);
 }
 
-pid_t __fork() {
+int __fork() {
 	return syscall(SYS_fork);
 }
 
@@ -152,6 +154,14 @@ void __sleep(unsigned int seconds) {
 
 int __srch(pid_t pid) {
 	return (kill(pid, 0) && errno == ESRCH);
+}
+
+void __syslog(const char *file, int line) {
+	int errsv = errno;
+	openlog("coral-api", LOG_CONS | LOG_NDELAY | LOG_PID, LOG_USER);
+	syslog(LOG_ERR, "%s:%d | %s", file, line, strerror(errsv));
+	closelog();
+	errno = errsv;
 }
 
 int __timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime) {

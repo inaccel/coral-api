@@ -4,8 +4,6 @@
 #include <pthread.h>
 #include <stdint.h>
 
-__BEGIN_DECLS
-
 #define PRIVATE MAP_PRIVATE
 
 #define PROCESS_PRIVATE PTHREAD_PROCESS_PRIVATE
@@ -13,6 +11,20 @@ __BEGIN_DECLS
 #define PROCESS_SHARED PTHREAD_PROCESS_SHARED
 
 #define SHARED MAP_SHARED
+
+#define SYSLOG(...) ({ \
+	int error = __VA_ARGS__; \
+	if (error) __syslog(__FILE__, __LINE__); \
+	error; \
+})
+
+#define SYSLOG_NEGATIVE(...) ({ \
+	int error = __VA_ARGS__; \
+	if (error < 0) __syslog(__FILE__, __LINE__); \
+	error; \
+})
+
+__BEGIN_DECLS
 
 void *__alloc(size_t size, int flag);
 
@@ -30,7 +42,7 @@ void __exit(int status);
 
 uintptr_t __floor_pagesize(uintptr_t ptr);
 
-pid_t __fork();
+int __fork();
 
 int __free(void *addr, size_t size);
 
@@ -63,6 +75,8 @@ int __signal(pthread_cond_t *cond);
 void __sleep(unsigned int seconds);
 
 int __srch(pid_t pid);
+
+void __syslog(const char *file, int line);
 
 int __timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime);
 

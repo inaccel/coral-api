@@ -2,21 +2,19 @@
 #include <cerrno>
 #include <condition_variable>
 #include <grpc++/create_channel.h>
-#include <stdint.h>
 #include <sstream>
-#include <unistd.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "config.h"
+#include "coral.grpc.pb.h"
 #include "cube.h"
-#include "debug.h"
 #include "rpc.h"
 #include "self.h"
 #include "utils.h"
-
-#include "coral.grpc.pb.h"
 
 static pthread_mutex_t it = PTHREAD_MUTEX_INITIALIZER;
 
@@ -48,71 +46,21 @@ struct _inaccel_response {
 	bool done;
 };
 
+static inaccel_request __alloc_request();
+
+static inaccel_response __alloc_response();
+
+static void __free_request(inaccel_request request);
+
+static void __free_response(inaccel_response response);
+
 static void __init();
 
+static int __str_request(std::stringstream &string, const inaccel_request request);
+
+static int __str_response(std::stringstream &string, const inaccel_response response);
+
 static void *__waiter(void *arg);
-
-__attribute__ ((constructor))
-static void __init() {
-	char *coral = getenv("INACCEL_CORAL");
-	if (!coral) {
-		if (sprintf(target, "unix:" INACCEL_RUN "/coral.sock") < 0) {
-			PERROR("__init: sprintf");
-		}
-	} else {
-		if (sprintf(target, "unix:" INACCEL_RUN "/%s.sock", coral) < 0) {
-			PERROR("__init: sprintf");
-		}
-	}
-}
-
-static void *__waiter(void *arg) {
-	while (true) {
-		try {
-			inaccel_response response;
-			bool ok;
-			if (cq->Next((void **) &response, &ok) && ok) {
-				__lock(&response->mutex);
-
-				inaccel::Arguments *__arguments = response->request.mutable_arguments();
-
-				for (int index = 0; index < __arguments->argument_size(); index++) {
-					inaccel::Argument *__argument = __arguments->mutable_argument(index);
-
-					if (__argument->has_array()) {
-						inaccel::Array *__array = __argument->mutable_array();
-
-						if (__detach((slice_t *) __array->context())) {
-							PERROR("__waiter: __detach");
-						}
-					}
-				}
-
-				if (response->cancelled) {
-					__unlock(&response->mutex);
-
-					if (__destroy_mutex(&response->mutex)) {
-						PERROR("__waiter: __destroy_mutex");
-					}
-
-					if (__destroy_cond(&response->cond)) {
-						PERROR("__waiter: __destroy_cond");
-					}
-
-					delete response;
-				} else {
-					response->done = true;
-
-					__broadcast(&response->cond);
-
-					__unlock(&response->mutex);
-				}
-			}
-		} catch (...) {}
-	}
-
-	return NULL;
-}
 
 static inaccel_request __alloc_request() {
 	try {
@@ -122,10 +70,203 @@ static inaccel_request __alloc_request() {
 	}
 }
 
+static inaccel_response __alloc_response() {
+	try {
+		return new _inaccel_response();
+	} catch (...) {
+		return NULL;
+	}
+}
+
 static void __free_request(inaccel_request request) {
 	try {
 		delete request;
 	} catch (...) {}
+}
+
+static void __free_response(inaccel_response response) {
+	try {
+		delete response;
+	} catch (...) {}
+}
+
+__attribute__ ((constructor))
+static void __init() {
+	char *coral = getenv("INACCEL_CORAL");
+	if (!coral) {
+		SYSLOG_NEGATIVE(sprintf(target, "unix:" INACCEL_RUN "/coral.sock"));
+	} else {
+		SYSLOG_NEGATIVE(sprintf(target, "unix:" INACCEL_RUN "/%s.sock", coral));
+	}
+}
+
+static int __str_request(std::stringstream &string, const inaccel_request request) {
+	string << "---" << std::endl << request->grpc.accelerator() << ":";
+
+	inaccel::Arguments __arguments = request->grpc.arguments();
+
+	for (int index = 0; index < __arguments.argument_size(); index++) {
+		string << std::endl;
+
+		inaccel::Argument __argument = __arguments.argument(index);
+
+		if (__argument.has_array()) {
+			inaccel::Array __array = __argument.array();
+
+			string << "- array:";
+
+			slice_t *slice = (slice_t *) __array.context();
+
+			if (slice->cube->pid != __process()) {
+				errno = EACCES;
+				return -1;
+			}
+
+			string << std::endl << "    id: " << slice->cube->id;
+			string << std::endl << "    offset: " << slice->offset;
+			string << std::endl << "    size: " << slice->size;
+			string << std::endl << "    version: " << slice->version;
+		}
+
+		if (__argument.has_scalar()) {
+			inaccel::Scalar scalar = __argument.scalar();
+
+			string << "- scalar:";
+			string << std::endl << "    bytes: 0x";
+			const char hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+			for (char byte : scalar.bytes()) {
+				string << hex[(byte & 0xF0) >> 4];
+				string << hex[(byte & 0x0F) >> 0];
+			}
+		}
+	}
+
+	return 0;
+}
+
+static int __str_response(std::stringstream &string, const inaccel_response response) {
+	switch (response->status.error_code()) {
+	case grpc::StatusCode::OK:
+		string << "Ok";
+
+		break;
+	case grpc::StatusCode::CANCELLED:
+		string << "Cancelled";
+
+		break;
+	case grpc::StatusCode::UNKNOWN:
+		string << "Unknown";
+
+		break;
+	case grpc::StatusCode::INVALID_ARGUMENT:
+		string << "Invalid argument";
+
+		break;
+	case grpc::StatusCode::DEADLINE_EXCEEDED:
+		string << "Deadline exceeded";
+
+		break;
+	case grpc::StatusCode::NOT_FOUND:
+		string << "Not found";
+
+		break;
+	case grpc::StatusCode::ALREADY_EXISTS:
+		string << "Already exists";
+
+		break;
+	case grpc::StatusCode::PERMISSION_DENIED:
+		string << "Permission denied";
+
+		break;
+	case grpc::StatusCode::UNAUTHENTICATED:
+		string << "Unauthenticated";
+
+		break;
+	case grpc::StatusCode::RESOURCE_EXHAUSTED:
+		string << "Resource exhausted";
+
+		break;
+	case grpc::StatusCode::FAILED_PRECONDITION:
+		string << "Failed precondition";
+
+		break;
+	case grpc::StatusCode::ABORTED:
+		string << "Aborted";
+
+		break;
+	case grpc::StatusCode::OUT_OF_RANGE:
+		string << "Out of range";
+
+		break;
+	case grpc::StatusCode::UNIMPLEMENTED:
+		string << "Unimplemented";
+
+		break;
+	case grpc::StatusCode::INTERNAL:
+		string << "Internal";
+
+		break;
+	case grpc::StatusCode::UNAVAILABLE:
+		string << "Unavailable";
+
+		break;
+	case grpc::StatusCode::DATA_LOSS:
+		string << "Data loss";
+
+		break;
+	case grpc::StatusCode::DO_NOT_USE:
+		string << "Do not use";
+
+		break;
+	}
+
+	if (!response->status.error_message().empty()) {
+		string << ": " << response->status.error_message();
+	}
+
+	return 0;
+}
+
+static void *__waiter(void *arg) {
+	while (true) {
+		try {
+			inaccel_response response;
+			bool ok;
+			if (cq->Next((void **) &response, &ok) && ok) {
+				SYSLOG(__lock(&response->mutex));
+
+				inaccel::Arguments *__arguments = response->request.mutable_arguments();
+
+				for (int index = 0; index < __arguments->argument_size(); index++) {
+					inaccel::Argument *__argument = __arguments->mutable_argument(index);
+
+					if (__argument->has_array()) {
+						inaccel::Array *__array = __argument->mutable_array();
+
+						SYSLOG(__detach((slice_t *) __array->context()));
+					}
+				}
+
+				if (response->cancelled) {
+					SYSLOG(__unlock(&response->mutex));
+
+					SYSLOG(__destroy_mutex(&response->mutex));
+
+					SYSLOG(__destroy_cond(&response->cond));
+
+					delete response;
+				} else {
+					response->done = true;
+
+					SYSLOG(__broadcast(&response->cond));
+
+					SYSLOG(__unlock(&response->mutex));
+				}
+			}
+		} catch (...) {}
+	}
+
+	return NULL;
 }
 
 __attribute__ ((visibility ("default")))
@@ -213,50 +354,6 @@ inaccel_request inaccel_request_create(const char *accelerator) {
 	return request;
 }
 
-int __str_request(std::stringstream &string, const inaccel_request request) {
-	string << "---" << std::endl << request->grpc.accelerator() << ":";
-
-	inaccel::Arguments __arguments = request->grpc.arguments();
-
-	for (int index = 0; index < __arguments.argument_size(); index++) {
-		string << std::endl;
-
-		inaccel::Argument __argument = __arguments.argument(index);
-
-		if (__argument.has_array()) {
-			inaccel::Array __array = __argument.array();
-
-			string << "- array:";
-
-			slice_t *slice = (slice_t *) __array.context();
-
-			if (slice->cube->pid != __process()) {
-				errno = EACCES;
-				return -1;
-			}
-
-			string << std::endl << "    id: " << slice->cube->id;
-			string << std::endl << "    offset: " << slice->offset;
-			string << std::endl << "    size: " << slice->size;
-			string << std::endl << "    version: " << slice->version;
-		}
-
-		if (__argument.has_scalar()) {
-			inaccel::Scalar scalar = __argument.scalar();
-
-			string << "- scalar:";
-			string << std::endl << "    bytes: 0x";
-			const char hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-			for (char byte : scalar.bytes()) {
-				string << hex[(byte & 0xF0) >> 4];
-				string << hex[(byte & 0x0F) >> 0];
-			}
-		}
-	}
-
-	return 0;
-}
-
 __attribute__ ((visibility ("default")))
 int inaccel_request_fprint(FILE *stream, const inaccel_request request) {
 	if (!request) {
@@ -308,20 +405,6 @@ int inaccel_request_snprint(char *s, size_t n, const inaccel_request request) {
 	}
 }
 
-static inaccel_response __alloc_response() {
-	try {
-		return new _inaccel_response();
-	} catch (...) {
-		return NULL;
-	}
-}
-
-static void __free_response(inaccel_response response) {
-	try {
-		delete response;
-	} catch (...) {}
-}
-
 __attribute__ ((visibility ("default")))
 inaccel_response inaccel_response_create() {
 	inaccel_response response = __alloc_response();
@@ -332,8 +415,6 @@ inaccel_response inaccel_response_create() {
 	if (__init_cond(&response->cond, PROCESS_SHARED)) {
 		int errsv = errno;
 
-		PERROR("inaccel_response_create: __init_cond");
-
 		__free_response(response);
 
 		errno = errsv;
@@ -343,7 +424,7 @@ inaccel_response inaccel_response_create() {
 	if (__init_mutex(&response->mutex, PROCESS_SHARED)) {
 		int errsv = errno;
 
-		PERROR("inaccel_response_create: __init_mutex");
+		SYSLOG(__destroy_cond(&response->cond));
 
 		__free_response(response);
 
@@ -352,89 +433,6 @@ inaccel_response inaccel_response_create() {
 	}
 
 	return response;
-}
-
-int __str_response(std::stringstream &string, const inaccel_response response) {
-	switch (response->status.error_code()) {
-	case grpc::StatusCode::OK:
-		string << "Ok";
-
-		break;
-	case grpc::StatusCode::CANCELLED:
-		string << "Cancelled";
-
-		break;
-	case grpc::StatusCode::UNKNOWN:
-		string << "Unknown";
-
-		break;
-	case grpc::StatusCode::INVALID_ARGUMENT:
-		string << "Invalid argument";
-
-		break;
-	case grpc::StatusCode::DEADLINE_EXCEEDED:
-		string << "Deadline exceeded";
-
-		break;
-	case grpc::StatusCode::NOT_FOUND:
-		string << "Not found";
-
-		break;
-	case grpc::StatusCode::ALREADY_EXISTS:
-		string << "Already exists";
-
-		break;
-	case grpc::StatusCode::PERMISSION_DENIED:
-		string << "Permission denied";
-
-		break;
-	case grpc::StatusCode::UNAUTHENTICATED:
-		string << "Unauthenticated";
-
-		break;
-	case grpc::StatusCode::RESOURCE_EXHAUSTED:
-		string << "Resource exhausted";
-
-		break;
-	case grpc::StatusCode::FAILED_PRECONDITION:
-		string << "Failed precondition";
-
-		break;
-	case grpc::StatusCode::ABORTED:
-		string << "Aborted";
-
-		break;
-	case grpc::StatusCode::OUT_OF_RANGE:
-		string << "Out of range";
-
-		break;
-	case grpc::StatusCode::UNIMPLEMENTED:
-		string << "Unimplemented";
-
-		break;
-	case grpc::StatusCode::INTERNAL:
-		string << "Internal";
-
-		break;
-	case grpc::StatusCode::UNAVAILABLE:
-		string << "Unavailable";
-
-		break;
-	case grpc::StatusCode::DATA_LOSS:
-		string << "Data loss";
-
-		break;
-	case grpc::StatusCode::DO_NOT_USE:
-		string << "Do not use";
-
-		break;
-	}
-
-	if (!response->status.error_message().empty()) {
-		string << ": " << response->status.error_message();
-	}
-
-	return 0;
 }
 
 __attribute__ ((visibility ("default")))
@@ -464,26 +462,22 @@ void inaccel_response_release(inaccel_response response) {
 		return;
 	}
 
-	__lock(&response->mutex);
+	SYSLOG(__lock(&response->mutex));
 
 	if (response->done) {
-		__unlock(&response->mutex);
+		SYSLOG(__unlock(&response->mutex));
 
-		if (__destroy_mutex(&response->mutex)) {
-			PERROR("inaccel_response_release: __destroy_mutex");
-		}
+		SYSLOG(__destroy_mutex(&response->mutex));
 
-		if (__destroy_cond(&response->cond)) {
-			PERROR("inaccel_response_release: __destroy_cond");
-		}
+		SYSLOG(__destroy_cond(&response->cond));
 
 		__free_response(response);
 	} else {
 		response->cancelled = true;
 
-		__broadcast(&response->cond);
+		SYSLOG(__broadcast(&response->cond));
 
-		__unlock(&response->mutex);
+		SYSLOG(__unlock(&response->mutex));
 	}
 }
 
@@ -515,7 +509,7 @@ int inaccel_response_wait(inaccel_response response) {
 		return -1;
 	}
 
-	__lock(&response->mutex);
+	SYSLOG(__lock(&response->mutex));
 
 	while (true) {
 		if (response->cancelled || response->done) {
@@ -525,14 +519,14 @@ int inaccel_response_wait(inaccel_response response) {
 		if (__wait(&response->cond, &response->mutex)) {
 			int errsv = errno;
 
-			__unlock(&response->mutex);
+			SYSLOG(__unlock(&response->mutex));
 
 			errno = errsv;
 			return -1;
 		}
 	}
 
-	__unlock(&response->mutex);
+	SYSLOG(__unlock(&response->mutex));
 
 	return response->status.error_code();
 }
@@ -558,7 +552,7 @@ int inaccel_response_wait_for(inaccel_response response, time_t sec, long nsec) 
 		abstime.tv_nsec -= 1000000000L;
 	}
 
-	__lock(&response->mutex);
+	SYSLOG(__lock(&response->mutex));
 
 	while (true) {
 		if (response->cancelled || response->done) {
@@ -568,14 +562,14 @@ int inaccel_response_wait_for(inaccel_response response, time_t sec, long nsec) 
 		if (__timedwait(&response->cond, &response->mutex, &abstime)) {
 			int errsv = errno;
 
-			__unlock(&response->mutex);
+			SYSLOG(__unlock(&response->mutex));
 
 			errno = errsv;
 			return -1;
 		}
 	}
 
-	__unlock(&response->mutex);
+	SYSLOG(__unlock(&response->mutex));
 
 	return response->status.error_code();
 }
@@ -622,6 +616,7 @@ int inaccel_submit(inaccel_request request, inaccel_response response) {
 		__metadata->set_stamp(stamp++);
 
 		LOCK;
+
 		if (!cq) {
 			cq = new grpc::CompletionQueue;
 
@@ -647,6 +642,7 @@ int inaccel_submit(inaccel_request request, inaccel_response response) {
 				return -1;
 			}
 		}
+
 		UNLOCK;
 
 		inaccel::Coral::NewStub(grpc::CreateChannel(target, grpc::InsecureChannelCredentials()))

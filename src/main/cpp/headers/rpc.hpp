@@ -112,7 +112,7 @@ namespace inaccel {
 		}
 
 		template <typename T>
-		request &arg(const typename std::vector<T>::iterator first, const typename std::vector<T>::iterator last, unsigned index) {
+		request &arg(const typename std::vector<T>::iterator &first, const typename std::vector<T>::iterator &last, unsigned index) {
 			int error = inaccel_request_arg_scalar(c, (last - first) * sizeof(T), &(*first), index);
 			if (error) {
 				throw std::runtime_error(std::strerror(errno));

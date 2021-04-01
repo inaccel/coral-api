@@ -1,6 +1,8 @@
 #ifndef SELF_H
 #define SELF_H
 
+#include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 typedef char temp_t[6];

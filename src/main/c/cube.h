@@ -1,6 +1,8 @@
 #ifndef CUBE_H
 #define CUBE_H
 
+#include <sys/types.h>
+
 #include "self.h"
 
 __BEGIN_DECLS
