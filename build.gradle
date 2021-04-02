@@ -4,7 +4,7 @@ plugins {
 
 compileJava.enabled false
 
-task test(overwrite: true, type: JavaExec) {
+task example(type: JavaExec) {
 	classpath sourceSets.test.runtimeClasspath
 	main 'Example'
 }
