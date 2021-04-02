@@ -72,6 +72,8 @@ namespace inaccel {
 			}
 		}
 
+		request(const request &request) = delete;
+
 		~request() {
 			inaccel_request_release(c);
 		}
@@ -180,6 +182,8 @@ namespace inaccel {
 
 			return *this;
 		}
+
+		request &operator=(const request &request) = delete;
 
 	};
 
