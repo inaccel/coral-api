@@ -4,6 +4,8 @@ import io.netty.buffer.AbstractByteBufAllocator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
+import java.nio.ByteOrder;
+
 public final class InAccelByteBufAllocator extends AbstractByteBufAllocator {
 
 	public static final ByteBufAllocator DEFAULT = new InAccelByteBufAllocator();
@@ -25,7 +27,7 @@ public final class InAccelByteBufAllocator extends AbstractByteBufAllocator {
 	}
 
 	protected ByteBuf newDirectBuffer(int initialCapacity, int maxCapacity) {
-		final ByteBuf buf = new InAccelByteBuf(this, initialCapacity, maxCapacity);
+		final ByteBuf buf = new InAccelByteBuf(this, initialCapacity, maxCapacity).order(ByteOrder.nativeOrder());
 
 		return disableLeakDetector ? buf : toLeakAwareBuffer(buf);
 	}

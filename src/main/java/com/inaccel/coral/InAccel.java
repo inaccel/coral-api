@@ -39,15 +39,15 @@ public final class InAccel {
 			if (value instanceof Byte) {
 				return arg(ByteBufAllocator.DEFAULT.directBuffer(Byte.BYTES).writeByte(value.byteValue()), index);
 			} else if (value instanceof Double || value instanceof DoubleAccumulator || value instanceof DoubleAdder) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Double.BYTES).writeDouble(value.doubleValue()), index);
+				return arg(ByteBufAllocator.DEFAULT.directBuffer(Double.BYTES).writeDoubleLE(value.doubleValue()), index);
 			} else if (value instanceof Float) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Float.BYTES).writeFloat(value.floatValue()), index);
+				return arg(ByteBufAllocator.DEFAULT.directBuffer(Float.BYTES).writeFloatLE(value.floatValue()), index);
 			} else if (value instanceof AtomicInteger || value instanceof Integer) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Integer.BYTES).writeInt(value.intValue()), index);
+				return arg(ByteBufAllocator.DEFAULT.directBuffer(Integer.BYTES).writeIntLE(value.intValue()), index);
 			} else if (value instanceof AtomicLong || value instanceof Long || value instanceof LongAccumulator || value instanceof LongAdder) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Long.BYTES).writeLong(value.longValue()), index);
+				return arg(ByteBufAllocator.DEFAULT.directBuffer(Long.BYTES).writeLongLE(value.longValue()), index);
 			} else if (value instanceof Short) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Short.BYTES).writeShort(value.shortValue()), index);
+				return arg(ByteBufAllocator.DEFAULT.directBuffer(Short.BYTES).writeShortLE(value.shortValue()), index);
 			} else {
 				throw new IllegalArgumentException();
 			}
