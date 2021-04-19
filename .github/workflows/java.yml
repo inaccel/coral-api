@@ -1,0 +1,29 @@
+name: java
+on: workflow_dispatch
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build library (Core)
+      uses: docker://inaccel/buildpack-deps:grpc
+      with:
+        entrypoint: make
+        args: |
+          src/main/resources/native/libcoral-api.so
+    - name: Set up Java
+      uses: actions/setup-java@v2
+      with:
+        distribution: adopt
+        java-version: 8
+        server-id: ossrh
+        server-username: OSSRH_USERNAME
+        server-password: OSSRH_PASSWORD
+    - name: Package & Publish to Maven Central Repository
+      run: mvn deploy
+      env:
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        SIGN_KEY: ${{ secrets.SIGN_KEY }}
+        SIGN_KEY_PASS: ${{ secrets.SIGN_KEY_PASS }}
