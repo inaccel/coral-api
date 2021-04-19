@@ -35,6 +35,8 @@ _c.inaccel_response_wait.restype = _ctypes.c_int
 _c.inaccel_submit.argtypes = [_ctypes.c_void_p, _ctypes.c_void_p]
 _c.inaccel_submit.restype = _ctypes.c_int
 
+_executor = _futures.ThreadPoolExecutor()
+
 
 class request:
 
@@ -130,5 +132,4 @@ def submit(request):
 
         _c.inaccel_response_release(cresponse)
 
-    with _futures.ThreadPoolExecutor() as executor:
-        return executor.submit(fn, cresponse)
+    return _executor.submit(fn, cresponse)
