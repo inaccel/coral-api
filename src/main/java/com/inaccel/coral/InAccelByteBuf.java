@@ -1,14 +1,11 @@
 package com.inaccel.coral;
 
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.InAccelUnpooledUnsafeNoCleanerDirectByteBuf;
+import io.netty.buffer.InAccelUnpooledDirectByteBuf;
 
 import java.nio.ByteBuffer;
 
-final class InAccelByteBuf extends InAccelUnpooledUnsafeNoCleanerDirectByteBuf {
+final class InAccelByteBuf extends InAccelUnpooledDirectByteBuf {
 
 	InAccelByteBuf(ByteBufAllocator alloc, int initialCapacity, int maxCapacity) {
 		super(alloc, initialCapacity, maxCapacity);
@@ -17,18 +14,10 @@ final class InAccelByteBuf extends InAccelUnpooledUnsafeNoCleanerDirectByteBuf {
 	@Override
 	protected ByteBuffer allocateDirect(int initialCapacity) {
 		long memoryAddress = Jni.inaccel_alloc(initialCapacity);
-		if (memoryAddress == 0) {
+		if (memoryAddress == Jni.NULL) {
 			throw new OutOfMemoryError(C.library.strerror(Jni.errno()));
 		}
 		return directBuffer(memoryAddress, initialCapacity);
-	}
-
-	private static ByteBuffer directBuffer(long memoryAddress, int size) {
-		return new Pointer(memoryAddress).getByteBuffer(0, size);
-	}
-
-	private static long directBufferAddress(ByteBuffer buffer) {
-		return Pointer.nativeValue(Native.getDirectBufferPointer(buffer));
 	}
 
 	@Override
@@ -39,7 +28,7 @@ final class InAccelByteBuf extends InAccelUnpooledUnsafeNoCleanerDirectByteBuf {
 	@Override
 	protected ByteBuffer reallocateDirect(ByteBuffer oldBuffer, int initialCapacity) {
 		long memoryAddress = Jni.inaccel_realloc(directBufferAddress(oldBuffer), initialCapacity);
-		if (memoryAddress == 0) {
+		if (memoryAddress == Jni.NULL) {
 			throw new OutOfMemoryError(C.library.strerror(Jni.errno()));
 		}
 		return directBuffer(memoryAddress, initialCapacity);

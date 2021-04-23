@@ -26,7 +26,7 @@ public final class InAccel {
 
 		public Request(String accelerator) throws RuntimeException {
 			c = Jni.inaccel_request_create(ByteBufAllocator.DEFAULT.directBuffer().writeBytes(accelerator.getBytes()).writeByte(0).memoryAddress());
-			if (c == 0) {
+			if (c == Jni.NULL) {
 				throw new RuntimeException(C.library.strerror(Jni.errno()));
 			}
 		}
@@ -102,7 +102,7 @@ public final class InAccel {
 
 	public static Future<Void> submit(Request request) throws RuntimeException {
 		final long cresponse = Jni.inaccel_response_create();
-		if (cresponse == 0) {
+		if (cresponse == Jni.NULL) {
 			throw new RuntimeException(C.library.strerror(Jni.errno()));
 		}
 
