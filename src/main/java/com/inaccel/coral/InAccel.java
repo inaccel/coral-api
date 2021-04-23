@@ -2,6 +2,7 @@ package com.inaccel.coral;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.internal.ObjectCleaner;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
@@ -20,6 +21,20 @@ public final class InAccel {
 
 	public static final class Request {
 
+		private static class Finalize implements Runnable {
+
+			private final long request;
+
+			private Finalize(long request) {
+				this.request = request;
+			}
+
+			public void run() {
+				Jni.inaccel_request_release(request);
+			}
+
+		}
+
 		final long c;
 
 		private int index = 0;
@@ -29,6 +44,8 @@ public final class InAccel {
 			if (c == Jni.NULL) {
 				throw new RuntimeException(C.library.strerror(Jni.errno()));
 			}
+
+			ObjectCleaner.register(this, new Finalize(c));
 		}
 
 		public <T extends Number> Request arg(T value) throws IllegalArgumentException, RuntimeException {
@@ -75,12 +92,6 @@ public final class InAccel {
 			}
 
 			return this;
-		}
-
-		@Override
-		@SuppressWarnings("deprecation")
-		protected void finalize() throws Throwable {
-			Jni.inaccel_request_release(c);
 		}
 
 		@Override
