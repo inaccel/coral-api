@@ -1,9 +1,10 @@
 package com.inaccel.coral;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.internal.ObjectCleaner;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -40,8 +41,10 @@ public final class InAccel {
 		private int index = 0;
 
 		public Request(String accelerator) throws RuntimeException {
-			c = Jni.inaccel_request_create(ByteBufAllocator.DEFAULT.directBuffer().writeBytes(accelerator.getBytes()).writeByte(0).memoryAddress());
-			if (c == Jni.NULL) {
+			byte[] bytes = accelerator.getBytes(StandardCharsets.UTF_8);
+
+			c = Jni.inaccel_request_create(InAccelByteBuf.directBufferAddress(ByteBuffer.allocateDirect(bytes.length + 1).put(bytes).put((byte) 0)));
+			if (c == 0) {
 				throw new RuntimeException(C.library.strerror(Jni.errno()));
 			}
 
@@ -54,20 +57,33 @@ public final class InAccel {
 
 		public <T extends Number> Request arg(T value, int index) throws IllegalArgumentException, RuntimeException {
 			if (value instanceof Byte) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Byte.BYTES).writeByte(value.byteValue()), index);
+				return arg(ByteBuffer.allocateDirect(Byte.BYTES).put(value.byteValue()), index);
 			} else if (value instanceof Double || value instanceof DoubleAccumulator || value instanceof DoubleAdder) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Double.BYTES).writeDoubleLE(value.doubleValue()), index);
+				return arg(ByteBuffer.allocateDirect(Double.BYTES).order(ByteOrder.nativeOrder()).putDouble(value.doubleValue()), index);
 			} else if (value instanceof Float) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Float.BYTES).writeFloatLE(value.floatValue()), index);
+				return arg(ByteBuffer.allocateDirect(Float.BYTES).order(ByteOrder.nativeOrder()).putFloat(value.floatValue()), index);
 			} else if (value instanceof AtomicInteger || value instanceof Integer) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Integer.BYTES).writeIntLE(value.intValue()), index);
+				return arg(ByteBuffer.allocateDirect(Integer.BYTES).order(ByteOrder.nativeOrder()).putInt(value.intValue()), index);
 			} else if (value instanceof AtomicLong || value instanceof Long || value instanceof LongAccumulator || value instanceof LongAdder) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Long.BYTES).writeLongLE(value.longValue()), index);
+				return arg(ByteBuffer.allocateDirect(Long.BYTES).order(ByteOrder.nativeOrder()).putLong(value.longValue()), index);
 			} else if (value instanceof Short) {
-				return arg(ByteBufAllocator.DEFAULT.directBuffer(Short.BYTES).writeShortLE(value.shortValue()), index);
+				return arg(ByteBuffer.allocateDirect(Short.BYTES).order(ByteOrder.nativeOrder()).putShort(value.shortValue()), index);
 			} else {
 				throw new IllegalArgumentException();
 			}
+		}
+
+		public Request arg(ByteBuffer value) throws RuntimeException {
+			return arg(value, index++);
+		}
+
+		public Request arg(ByteBuffer value, int index) throws RuntimeException {
+			int error = Jni.inaccel_request_arg_scalar(c, value.capacity(), InAccelByteBuf.directBufferAddress(value), index);
+			if (error != 0) {
+				throw new RuntimeException(C.library.strerror(Jni.errno()));
+			}
+
+			return this;
 		}
 
 		public Request arg(ByteBuf value) throws RuntimeException {
@@ -75,10 +91,6 @@ public final class InAccel {
 		}
 
 		public Request arg(ByteBuf value, int index) throws RuntimeException {
-			if (!value.isDirect()) {
-				value = ByteBufAllocator.DEFAULT.directBuffer(value.capacity()).writeBytes(value);
-			}
-
 			if (value.alloc() instanceof InAccelByteBufAllocator) {
 				int error = Jni.inaccel_request_arg_array(c, value.capacity(), value.memoryAddress(), index);
 				if (error != 0) {
@@ -101,12 +113,12 @@ public final class InAccel {
 				throw new RuntimeException(C.library.strerror(Jni.errno()));
 			}
 
-			ByteBuf s = ByteBufAllocator.DEFAULT.directBuffer(n + 1);
-			if (Jni.inaccel_request_snprint(s.memoryAddress(), s.capacity(), c) != n) {
+			ByteBuffer s = ByteBuffer.allocateDirect(n + 1);
+			if (Jni.inaccel_request_snprint(InAccelByteBuf.directBufferAddress(s), s.capacity(), c) != n) {
 				throw new RuntimeException(C.library.strerror(Jni.errno()));
 			}
 
-			return s.toString(0, s.capacity(), StandardCharsets.UTF_8);
+			return StandardCharsets.UTF_8.decode(s).toString();
 		}
 
 	}
@@ -160,8 +172,8 @@ public final class InAccel {
 						throw new RuntimeException(C.library.strerror(errsv));
 					}
 
-					ByteBuf s = ByteBufAllocator.DEFAULT.directBuffer(n + 1);
-					if (Jni.inaccel_response_snprint(s.memoryAddress(), s.capacity(), cresponse) != n) {
+					ByteBuffer s = ByteBuffer.allocateDirect(n + 1);
+					if (Jni.inaccel_response_snprint(InAccelByteBuf.directBufferAddress(s), s.capacity(), cresponse) != n) {
 						int errsv = Jni.errno();
 
 						Jni.inaccel_response_release(cresponse);
@@ -175,7 +187,7 @@ public final class InAccel {
 
 					service.shutdown();
 
-					throw new Exception(s.toString(0, s.capacity(), StandardCharsets.UTF_8));
+					throw new Exception(StandardCharsets.UTF_8.decode(s).toString());
 				}
 
 				Jni.inaccel_response_release(cresponse);

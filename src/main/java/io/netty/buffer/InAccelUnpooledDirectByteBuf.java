@@ -29,11 +29,11 @@ public abstract class InAccelUnpooledDirectByteBuf extends UnpooledDirectByteBuf
 		return this;
 	}
 
-	protected static ByteBuffer directBuffer(long memoryAddress, int size) {
+	public static ByteBuffer directBuffer(long memoryAddress, int size) {
 		return new Pointer(memoryAddress).getByteBuffer(0, size).order(ByteOrder.BIG_ENDIAN);
 	}
 
-	protected static long directBufferAddress(ByteBuffer buffer) {
+	public static long directBufferAddress(ByteBuffer buffer) {
 		return Pointer.nativeValue(Native.getDirectBufferPointer(buffer));
 	}
 
