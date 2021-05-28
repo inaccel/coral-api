@@ -22,6 +22,10 @@ public class Example {
 		Future<Void> response = InAccel.submit(request);
 
 		response.get();
+
+		c.release();
+		b.release();
+		a.release();
 	}
 
 }
