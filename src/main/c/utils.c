@@ -137,6 +137,10 @@ int __session(pid_t pid) {
 	if (setsid() == -1) {
 		return -1;
 	}
+	int fd;
+	for (fd = 0; fd < sysconf(_SC_OPEN_MAX) - 1; fd++) {
+		close(fd);
+	}
 	char comm[16];
 	if (sprintf(comm, "inaccel/%i", pid) < 0) {
 		return -1;
