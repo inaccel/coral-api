@@ -4,7 +4,7 @@ from . import _library
 _c = _library.load('coral-api', __file__)
 
 
-class allocator(metaclass=_base_allocator):
+class inaccel_allocator(metaclass=_base_allocator):
 
     _alloc_ = _c.PyDataMem_AllocFunc
 
@@ -13,3 +13,6 @@ class allocator(metaclass=_base_allocator):
     _realloc_ = _c.PyDataMem_ReallocFunc
 
     _zeroed_alloc_ = _c.PyDataMem_ZeroedAllocFunc
+
+
+allocator = inaccel_allocator
