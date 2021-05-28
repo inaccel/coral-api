@@ -54,6 +54,7 @@ static void __free_request(inaccel_request request);
 
 static void __free_response(inaccel_response response);
 
+__attribute__ ((constructor (102)))
 static void __init();
 
 static int __str_request(std::stringstream &string, const inaccel_request request);
@@ -90,13 +91,12 @@ static void __free_response(inaccel_response response) {
 	} catch (...) {}
 }
 
-__attribute__ ((constructor))
 static void __init() {
 	char *coral = getenv("INACCEL_CORAL");
 	if (!coral) {
-		SYSLOG_NEGATIVE(sprintf(target, "unix:" INACCEL_RUN "/coral.sock"));
+		SYSLOG_NEGATIVE(sprintf(target, "unix:" INACCEL_RUN "/coral.sock", INACCEL));
 	} else {
-		SYSLOG_NEGATIVE(sprintf(target, "unix:" INACCEL_RUN "/%s.sock", coral));
+		SYSLOG_NEGATIVE(sprintf(target, "unix:" INACCEL_RUN "/%s.sock", INACCEL, coral));
 	}
 }
 

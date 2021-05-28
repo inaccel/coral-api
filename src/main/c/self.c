@@ -12,13 +12,14 @@
 
 temp_t self;
 
+__attribute__ ((constructor (102)))
 static void __atfork();
 
+__attribute__ ((constructor (102)))
 static void __init();
 
 static int __mkself(char *path);
 
-__attribute__ ((constructor))
 static void __atfork() {
 	SYSLOG(pthread_atfork(NULL, NULL, __init));
 }
@@ -27,7 +28,6 @@ int __close(int fd) {
 	return close(fd);
 }
 
-__attribute__ ((constructor))
 static void __init() {
 	char path[PATH_MAX];
 	if (!SYSLOG(__mkself(path))) {
@@ -52,7 +52,7 @@ static void __init() {
 
 int __link_open(temp_t id) {
 	char path[PATH_MAX];
-	if (sprintf(path, INACCEL_SHM "/%.6s/XXXXXX", self) < 0) {
+	if (sprintf(path, INACCEL_SHM "/%.6s/XXXXXX", INACCEL, self) < 0) {
 		return -1;
 	}
 	int fd = mkstemp(path);
@@ -64,7 +64,7 @@ int __link_open(temp_t id) {
 }
 
 static int __mkself(char *path) {
-	if (sprintf(path, INACCEL_SHM "/XXXXXX") < 0) {
+	if (sprintf(path, INACCEL_SHM "/XXXXXX", INACCEL) < 0) {
 		return -1;
 	}
 	if (!mkdtemp(path)) {
@@ -76,7 +76,7 @@ static int __mkself(char *path) {
 
 int __reopen(const temp_t id) {
 	char path[PATH_MAX];
-	if (sprintf(path, INACCEL_SHM "/%.6s/%.6s", self, id) < 0) {
+	if (sprintf(path, INACCEL_SHM "/%.6s/%.6s", INACCEL, self, id) < 0) {
 		return -1;
 	}
 	return open(path, O_RDWR, S_IRUSR | S_IWUSR);
@@ -84,7 +84,7 @@ int __reopen(const temp_t id) {
 
 int __unlink(const temp_t id) {
 	char path[PATH_MAX];
-	if (sprintf(path, INACCEL_SHM "/%.6s/%.6s", self, id) < 0) {
+	if (sprintf(path, INACCEL_SHM "/%.6s/%.6s", INACCEL, self, id) < 0) {
 		return -1;
 	}
 	return unlink(path);

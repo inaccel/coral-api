@@ -21,10 +21,12 @@ static int __access(const void *addr);
 
 static void __action(int signal, siginfo_t *info, void *context);
 
+__attribute__ ((constructor (102)))
 static void __atfork();
 
 static void __child();
 
+__attribute__ ((constructor (102)))
 static void __init();
 
 static void __parent();
@@ -130,7 +132,6 @@ static void __action(int signal, siginfo_t *info, void *context) {
 	}
 }
 
-__attribute__ ((constructor))
 static void __atfork() {
 	SYSLOG(pthread_atfork(__prepare, __parent, __child));
 }
@@ -222,7 +223,6 @@ int __detach(slice_t *slice) {
 	return 0;
 }
 
-__attribute__ ((constructor))
 static void __init() {
 	__inaccel.sa_flags = SA_SIGINFO;
 	__inaccel.sa_sigaction = &__action;
