@@ -122,12 +122,11 @@ static int __access(const void *addr) {
 
 	UNLOCK;
 
-	errno = EADDRNOTAVAIL;
-	return -1;
+	return SIGSEGV;
 }
 
 static void __action(int signal, siginfo_t *info, void *context) {
-	if (SYSLOG(__access(info->si_addr))) {
+	if (SYSLOG_NEGATIVE(__access(info->si_addr))) {
 		(*__default.sa_sigaction)(signal, info, context);
 	}
 }
