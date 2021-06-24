@@ -6,7 +6,7 @@ title = "InAccel Coral API"
   search = true
   [[params.language_tabs]]
     key = "c"
-    name = "C (core)"
+    name = "C (Core)"
   [[params.language_tabs]]
     key = "cpp"
     name = "C++"
