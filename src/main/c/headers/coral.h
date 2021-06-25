@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef CORAL_H
-#define CORAL_H
+#ifndef INACCEL_CORAL_H
+#define INACCEL_CORAL_H
 
 #include "rpc.h"
 #include "shm.h"
 
-#endif // CORAL_H
+#endif // INACCEL_CORAL_H

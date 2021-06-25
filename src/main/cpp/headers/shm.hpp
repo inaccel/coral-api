@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SHM_HPP
-#define SHM_HPP
+#ifndef INACCEL_SHM_HPP
+#define INACCEL_SHM_HPP
 
 #include <vector>
 
@@ -70,4 +70,4 @@ namespace inaccel {
 
 }
 
-#endif // SHM_HPP
+#endif // INACCEL_SHM_HPP

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef CORAL_HPP
-#define CORAL_HPP
+#ifndef INACCEL_CORAL_HPP
+#define INACCEL_CORAL_HPP
 
 #include "rpc.hpp"
 #include "shm.hpp"
 
-#endif // CORAL_HPP
+#endif // INACCEL_CORAL_HPP

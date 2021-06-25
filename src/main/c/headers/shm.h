@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SHM_H
-#define SHM_H
+#ifndef INACCEL_SHM_H
+#define INACCEL_SHM_H
 
 #include <stddef.h>
 
@@ -83,4 +83,4 @@ void *inaccel_realloc(void *ptr, size_t size);
 }
 #endif
 
-#endif // SHM_H
+#endif // INACCEL_SHM_H

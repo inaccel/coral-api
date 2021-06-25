@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef RPC_H
-#define RPC_H
+#ifndef INACCEL_RPC_H
+#define INACCEL_RPC_H
 
 #include <stdio.h>
 #include <time.h>
@@ -204,4 +204,4 @@ int inaccel_submit(inaccel_request request, inaccel_response response);
 }
 #endif
 
-#endif // RPC_H
+#endif // INACCEL_RPC_H

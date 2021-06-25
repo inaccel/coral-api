@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef RPC_HPP
-#define RPC_HPP
+#ifndef INACCEL_RPC_HPP
+#define INACCEL_RPC_HPP
 
 #include <cstring>
 #include <fstream>
@@ -254,4 +254,4 @@ namespace inaccel {
 
 }
 
-#endif // RPC_HPP
+#endif // INACCEL_RPC_HPP
