@@ -18,9 +18,7 @@
 #define INACCEL_RPC_HPP
 
 #include <cstring>
-#include <fstream>
 #include <future>
-#include <vector>
 
 #include "rpc.h"
 #include "shm.hpp"
