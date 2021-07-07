@@ -194,9 +194,9 @@ accelerators, use the language-native InAccel allocator:
 
 ```python
 with inaccel.allocator:
-	a = np.ndarray(size, dtype=np.float32)
-	b = np.ndarray(size, dtype=np.float32)
-	c = np.ndarray(size, dtype=np.float32)
+    a = np.ndarray(size, dtype=np.float32)
+    b = np.ndarray(size, dtype=np.float32)
+    c = np.ndarray(size, dtype=np.float32)
 ```
 
 {{< lang c >}}
@@ -306,15 +306,15 @@ The response object is used to track the status of a request.
 ## Wait for the response
 
 ```c
-	inaccel_response_wait(response)
+	inaccel_response_wait(response);
 ```
 
 ```cpp
-	response.get()
+	response.get();
 ```
 
 ```java
-		response.get()
+		response.get();
 ```
 
 ```python
@@ -374,7 +374,7 @@ gcc src/test/c/example.c -lcoral-api
 > Compile the example:
 
 ```shell
-g++ src/test/c/example.cpp -lcoral-api -pthread
+g++ src/test/cpp/example.cpp -lcoral-api -pthread
 ```
 
 > Run the example:
