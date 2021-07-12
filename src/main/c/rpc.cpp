@@ -105,10 +105,22 @@ static int __str_request(std::stringstream &string, const inaccel_request reques
 
 	inaccel::Arguments __arguments = request->grpc.arguments();
 
+	if (!__arguments.argument_size()) {
+		string << " []";
+
+		return 0;
+	}
+
 	for (int index = 0; index < __arguments.argument_size(); index++) {
 		string << std::endl;
 
 		inaccel::Argument __argument = __arguments.argument(index);
+
+		if (!__argument.has_array() && !__argument.has_scalar()) {
+			string << "- {}";
+
+			continue;
+		}
 
 		if (__argument.has_array()) {
 			inaccel::Array __array = __argument.array();
