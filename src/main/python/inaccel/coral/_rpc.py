@@ -45,11 +45,11 @@ class request:
             _c.inaccel_request_release(self._c)
 
     def __init__(self, accelerator):
-        self._index = 0
-
         self._c = _c.inaccel_request_create(accelerator.encode('utf-8'))
         if self._c is None:
             raise RuntimeError(_os.strerror(_ctypes.get_errno()))
+
+        self._index = 0
 
     def __str__(self):
         n = _c.inaccel_request_snprint(None, 0, self._c)
@@ -63,27 +63,31 @@ class request:
         return s.decode()
 
     def arg(self, value, index=None):
-        if not index:
-            index = self._index
-            self._index += 1
+        if index:
+            _index = index
+        else:
+            _index = self._index
 
         if isinstance(value, _numpy.ndarray):
             if _allocator.handles(value):
-                error = _c.inaccel_request_arg_array(self._c, value.nbytes, value.__array_interface__['data'][0], index)
+                error = _c.inaccel_request_arg_array(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
             else:
-                error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.__array_interface__['data'][0], index)
+                error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
             if error:
                 raise RuntimeError(_os.strerror(_ctypes.get_errno()))
         elif isinstance(value, _numpy.bool):
-            error = _c.inaccel_request_arg_scalar(self._c, 1, value.to_bytes(1, 'little'), index)
+            error = _c.inaccel_request_arg_scalar(self._c, 1, value.to_bytes(1, 'little'), _index)
             if error:
                 raise RuntimeError(_os.strerror(_ctypes.get_errno()))
         elif isinstance(value, (_numpy.integer, _numpy.floating, _numpy.complexfloating)):
-            error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.newbyteorder('L').tobytes(), index)
+            error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.newbyteorder('L').tobytes(), _index)
             if error:
                 raise RuntimeError(_os.strerror(_ctypes.get_errno()))
         else:
             raise ValueError()
+
+        if not index:
+            self._index += 1
 
         return self
 

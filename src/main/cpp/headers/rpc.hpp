@@ -78,7 +78,11 @@ namespace inaccel {
 
 		template <typename T>
 		request &arg(const T &value) {
-			return arg(value, index++);
+			arg(value, index);
+
+			index++;
+
+			return *this;
 		}
 
 		template <typename T>
@@ -93,7 +97,11 @@ namespace inaccel {
 
 		template <typename T>
 		request &arg(const std::vector<T> &value) {
-			return arg(value, index++);
+			arg(value, index);
+
+			index++;
+
+			return *this;
 		}
 
 		template <typename T>
@@ -108,7 +116,11 @@ namespace inaccel {
 
 		template <typename T>
 		request &arg(const typename std::vector<T>::iterator &first, const typename std::vector<T>::iterator &last) {
-			return arg<T>(first, last, index++);
+			arg<T>(first, last, index);
+
+			index++;
+
+			return *this;
 		}
 
 		template <typename T>
@@ -123,7 +135,11 @@ namespace inaccel {
 
 		template <typename T>
 		request &arg_scalar(const T *first, const T *last) {
-			return arg_scalar(first, last, index++);
+			arg_scalar(first, last, index);
+
+			index++;
+
+			return *this;
 		}
 
 		template <typename T>
@@ -138,7 +154,11 @@ namespace inaccel {
 
 		template <typename T>
 		request &arg(const inaccel::vector<T> &value) {
-			return arg(value, index++);
+			arg(value, index);
+
+			index++;
+
+			return *this;
 		}
 
 		template <typename T>
@@ -153,7 +173,11 @@ namespace inaccel {
 
 		template <typename T>
 		request &arg(const typename inaccel::vector<T>::iterator &first, const typename inaccel::vector<T>::iterator &last) {
-			return arg<T>(first, last, index++);
+			arg<T>(first, last, index);
+
+			index++;
+
+			return *this;
 		}
 
 		template <typename T>
@@ -168,7 +192,11 @@ namespace inaccel {
 
 		template <typename T>
 		request &arg_array(const T *first, const T *last) {
-			return arg_array(first, last, index++);
+			arg_array(first, last, index);
+
+			index++;
+
+			return *this;
 		}
 
 		template <typename T>

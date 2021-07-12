@@ -52,7 +52,11 @@ public final class InAccel {
 		}
 
 		public <T extends Number> Request arg(T value) throws IllegalArgumentException, RuntimeException {
-			return arg(value, index++);
+			arg(value, index);
+
+			index++;
+
+			return this;
 		}
 
 		public <T extends Number> Request arg(T value, int index) throws IllegalArgumentException, RuntimeException {
@@ -74,7 +78,11 @@ public final class InAccel {
 		}
 
 		public Request arg(ByteBuffer value) throws RuntimeException {
-			return arg(value, index++);
+			arg(value, index);
+
+			index++;
+
+			return this;
 		}
 
 		public Request arg(ByteBuffer value, int index) throws RuntimeException {
@@ -87,7 +95,11 @@ public final class InAccel {
 		}
 
 		public Request arg(ByteBuf value) throws RuntimeException {
-			return arg(value, index++);
+			arg(value, index);
+
+			index++;
+
+			return this;
 		}
 
 		public Request arg(ByteBuf value, int index) throws RuntimeException {
