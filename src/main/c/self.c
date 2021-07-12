@@ -13,14 +13,14 @@
 temp_t self;
 
 __attribute__ ((constructor (102)))
-static void __atfork();
+static void __atfork(void);
 
 __attribute__ ((constructor (102)))
-static void __init();
+static void __init(void);
 
 static int __mkself(char *path);
 
-static void __atfork() {
+static void __atfork(void) {
 	SYSLOG(pthread_atfork(NULL, NULL, __init));
 }
 
@@ -28,7 +28,7 @@ int __close(int fd) {
 	return close(fd);
 }
 
-static void __init() {
+static void __init(void) {
 	char path[PATH_MAX];
 	if (!SYSLOG(__mkself(path))) {
 		pid_t pid = __process();

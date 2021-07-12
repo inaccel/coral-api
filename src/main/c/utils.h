@@ -42,7 +42,7 @@ void __exit(int status);
 
 uintptr_t __floor_pagesize(uintptr_t ptr);
 
-int __fork();
+int __fork(void);
 
 int __free(void *addr, size_t size);
 
@@ -58,7 +58,7 @@ void *__map(size_t size, int fd);
 
 int __perm(pid_t pid);
 
-pid_t __process();
+pid_t __process(void);
 
 int __protect(void *addr, size_t size);
 

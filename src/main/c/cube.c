@@ -22,16 +22,16 @@ static int __access(const void *addr);
 static void __action(int signal, siginfo_t *info, void *context);
 
 __attribute__ ((constructor (102)))
-static void __atfork();
+static void __atfork(void);
 
-static void __child();
+static void __child(void);
 
 __attribute__ ((constructor (102)))
-static void __init();
+static void __init(void);
 
-static void __parent();
+static void __parent(void);
 
-static void __prepare();
+static void __prepare(void);
 
 static int __access(const void *addr) {
 	LOCK;
@@ -131,7 +131,7 @@ static void __action(int signal, siginfo_t *info, void *context) {
 	}
 }
 
-static void __atfork() {
+static void __atfork(void) {
 	SYSLOG(pthread_atfork(__prepare, __parent, __child));
 }
 
@@ -163,7 +163,7 @@ int __attach(slice_t *slice) {
 	return 0;
 }
 
-static void __child() {
+static void __child(void) {
 	if (cubes) {
 		cube_t **__cubes;
 		for (__cubes = cubes; *__cubes != NULL; __cubes++) {
@@ -222,14 +222,14 @@ int __detach(slice_t *slice) {
 	return 0;
 }
 
-static void __init() {
+static void __init(void) {
 	__inaccel.sa_flags = SA_SIGINFO;
 	__inaccel.sa_sigaction = &__action;
 
 	SYSLOG(sigaction(SIGSEGV, &__inaccel, &__default));
 }
 
-static void __parent() {
+static void __parent(void) {
 	if (cubes) {
 		cube_t **__cubes;
 		for (__cubes = cubes; *__cubes != NULL; __cubes++) {
@@ -242,7 +242,7 @@ static void __parent() {
 	UNLOCK;
 }
 
-static void __prepare() {
+static void __prepare(void) {
 	LOCK;
 
 	if (cubes) {

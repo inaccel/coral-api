@@ -46,16 +46,16 @@ struct _inaccel_response {
 	bool done;
 };
 
-static inaccel_request __alloc_request();
+static inaccel_request __alloc_request(void);
 
-static inaccel_response __alloc_response();
+static inaccel_response __alloc_response(void);
 
 static void __free_request(inaccel_request request);
 
 static void __free_response(inaccel_response response);
 
 __attribute__ ((constructor (102)))
-static void __init();
+static void __init(void);
 
 static int __str_request(std::stringstream &string, const inaccel_request request);
 
@@ -63,7 +63,7 @@ static int __str_response(std::stringstream &string, const inaccel_response resp
 
 static void *__waiter(void *arg);
 
-static inaccel_request __alloc_request() {
+static inaccel_request __alloc_request(void) {
 	try {
 		return new _inaccel_request();
 	} catch (...) {
@@ -71,7 +71,7 @@ static inaccel_request __alloc_request() {
 	}
 }
 
-static inaccel_response __alloc_response() {
+static inaccel_response __alloc_response(void) {
 	try {
 		return new _inaccel_response();
 	} catch (...) {
@@ -91,7 +91,7 @@ static void __free_response(inaccel_response response) {
 	} catch (...) {}
 }
 
-static void __init() {
+static void __init(void) {
 	char *coral = getenv("INACCEL_CORAL");
 	if (!coral) {
 		SYSLOG_NEGATIVE(sprintf(target, "unix:" INACCEL_RUN "/coral.sock", INACCEL));
@@ -406,7 +406,7 @@ int inaccel_request_snprint(char *s, size_t n, const inaccel_request request) {
 }
 
 __attribute__ ((visibility ("default")))
-inaccel_response inaccel_response_create() {
+inaccel_response inaccel_response_create(void) {
 	inaccel_response response = __alloc_response();
 	if (!response) {
 		return NULL;

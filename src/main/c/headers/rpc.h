@@ -125,7 +125,7 @@ int inaccel_request_snprint(char *s, size_t n, const inaccel_request request);
  *           it returns a NULL value and errno is set to indicate the cause of
  *           the error.
  */
-inaccel_response inaccel_response_create();
+inaccel_response inaccel_response_create(void);
 
 /**
  *  @details Write response output to stream.

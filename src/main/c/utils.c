@@ -58,7 +58,7 @@ uintptr_t __floor_pagesize(uintptr_t ptr) {
 	return ptr & ~(sysconf(_SC_PAGESIZE) - 1);
 }
 
-int __fork() {
+int __fork(void) {
 	return syscall(SYS_fork);
 }
 
@@ -104,7 +104,7 @@ int __perm(pid_t pid) {
 	return (kill(pid, 0) && errno == EPERM);
 }
 
-pid_t __process() {
+pid_t __process(void) {
 	return getpid();
 }
 

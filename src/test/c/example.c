@@ -1,6 +1,6 @@
 #include <inaccel/coral.h>
 
-int main() {
+int main(void) {
 	int size = 1024;
 
 	float *a = (float *) inaccel_alloc(size * sizeof(float));
