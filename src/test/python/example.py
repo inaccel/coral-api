@@ -8,6 +8,8 @@ with inaccel.allocator:
     b = np.ndarray(size, dtype=np.float32)
     c = np.ndarray(size, dtype=np.float32)
 
+# ...
+
 request = inaccel.request('vector.addition')
 
 request.arg(a).arg(b).arg(c).arg(size)
@@ -17,3 +19,5 @@ print(request)
 response = inaccel.submit(request)
 
 response.result()
+
+# ...

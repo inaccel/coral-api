@@ -169,8 +169,9 @@ int inaccel_response_snprint(char *s, size_t n, const inaccel_response response)
  *           the response object to complete.
  *
  *  @param response A valid response object.
- *  @returns On success, returns 0. On failure, it returns -1, and errno is set
- *           to indicate the cause of the error.
+ *  @returns On success, returns the error code (a non-negative integer). On
+ *           failure, it returns -1, and errno is set to indicate the cause of
+ *           the error.
  */
 int inaccel_response_wait(inaccel_response response);
 
@@ -183,8 +184,9 @@ int inaccel_response_wait(inaccel_response response);
  *  @param sec Represents the elapsed time, in whole seconds.
  *  @param nsec Captures rest of the elapsed time, represented as the number of
  *              nanoseconds.
- *  @returns On success, returns 0. On failure, it returns -1, and errno is set
- *           to indicate the cause of the error.
+ *  @returns On success, returns the error code (a non-negative integer). On
+ *           failure, it returns -1, and errno is set to indicate the cause of
+ *           the error.
  */
 int inaccel_response_wait_for(inaccel_response response, time_t sec, long nsec);
 

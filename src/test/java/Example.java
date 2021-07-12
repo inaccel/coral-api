@@ -13,6 +13,8 @@ public class Example {
 		ByteBuf b = InAccelByteBufAllocator.DEFAULT.buffer(size * Float.BYTES);
 		ByteBuf c = InAccelByteBufAllocator.DEFAULT.buffer(size * Float.BYTES);
 
+		// ...
+
 		InAccel.Request request = new InAccel.Request("vector.addition");
 
 		request.arg(a).arg(b).arg(c).arg(size);
@@ -22,6 +24,8 @@ public class Example {
 		Future<Void> response = InAccel.submit(request);
 
 		response.get();
+
+		// ...
 
 		c.release();
 		b.release();
