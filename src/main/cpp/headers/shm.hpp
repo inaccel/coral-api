@@ -17,6 +17,9 @@
 #ifndef INACCEL_SHM_HPP
 #define INACCEL_SHM_HPP
 
+#if __GNUC__ >= 9 && __cplusplus >= 201703L
+#include <memory_resource>
+#endif
 #include <vector>
 
 #include "shm.h"
@@ -32,6 +35,8 @@ namespace inaccel {
 
 		typedef size_t size_type;
 
+		typedef T value_type;
+
 		template<typename U>
 		struct rebind {
 
@@ -40,7 +45,7 @@ namespace inaccel {
 		};
 
 		pointer allocate(size_type n, const void *hint = 0) {
-			pointer p = (pointer) inaccel_alloc(n * sizeof(T));
+			pointer p = (pointer) inaccel_alloc(n * sizeof(value_type));
 			if (!p) {
 				throw std::bad_alloc();
 			}
@@ -67,6 +72,40 @@ namespace inaccel {
 
 	template<typename T>
 	using vector = std::vector<T, inaccel::allocator<T>>;
+
+#if __GNUC__ >= 9 && __cplusplus >= 201703L
+	namespace pmr {
+
+		class memory_resource : public std::pmr::memory_resource {
+
+		private:
+
+			virtual void *do_allocate(size_t bytes, size_t alignment) {
+				void *p = inaccel_alloc(bytes);
+				if (!p) {
+					throw std::bad_alloc();
+				}
+				return p;
+			}
+
+			virtual void do_deallocate(void *p, size_t bytes, size_t alignment) {
+				inaccel_free(p);
+			}
+
+			virtual bool do_is_equal(const std::pmr::memory_resource &other) const noexcept {
+				return dynamic_cast<const memory_resource *>(&other);
+			}
+
+		};
+
+		static std::pmr::memory_resource *resource() noexcept {
+			static inaccel::pmr::memory_resource resource;
+
+			return &resource;
+		}
+
+	}
+#endif
 
 }
 

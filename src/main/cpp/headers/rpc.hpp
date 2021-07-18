@@ -209,6 +209,60 @@ namespace inaccel {
 			return *this;
 		}
 
+#if __GNUC__ >= 9 && __cplusplus >= 201703L
+		template <typename T>
+		request &arg(const std::pmr::vector<T> &value) {
+			arg(value, index);
+
+			index++;
+
+			return *this;
+		}
+
+		template <typename T>
+		request &arg(const std::pmr::vector<T> &value, unsigned index) {
+			if (value.get_allocator().resource()->is_equal(*inaccel::pmr::resource())) {
+				int error = inaccel_request_arg_array(c, value.size() * sizeof(T), value.data(), index);
+				if (error) {
+					throw std::runtime_error(std::strerror(errno));
+				}
+			} else {
+				int error = inaccel_request_arg_scalar(c, value.size() * sizeof(T), value.data(), index);
+				if (error) {
+					throw std::runtime_error(std::strerror(errno));
+				}
+			}
+
+			return *this;
+		}
+
+		template <typename T>
+		request &arg(const typename std::pmr::vector<T>::iterator &first, const typename std::pmr::vector<T>::iterator &last) {
+			arg<T>(first, last, index);
+
+			index++;
+
+			return *this;
+		}
+
+		template <typename T>
+		request &arg(const typename std::pmr::vector<T>::iterator &first, const typename std::pmr::vector<T>::iterator &last, unsigned index) {
+			if (first.get_allocator().resource()->is_equal(*inaccel::pmr::resource())) {
+				int error = inaccel_request_arg_array(c, (last - first) * sizeof(T), &(*first), index);
+				if (error) {
+					throw std::runtime_error(std::strerror(errno));
+				}
+			} else {
+				int error = inaccel_request_arg_scalar(c, (last - first) * sizeof(T), &(*first), index);
+				if (error) {
+					throw std::runtime_error(std::strerror(errno));
+				}
+			}
+
+			return *this;
+		}
+#endif
+
 		request &operator=(const request &request) = delete;
 
 	};
