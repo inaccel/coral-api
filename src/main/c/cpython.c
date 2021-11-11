@@ -1,21 +1,21 @@
 #include "shm.h"
 
 __attribute__ ((visibility ("default")))
-void *PyDataMem_AllocFunc(size_t size) {
-	return inaccel_alloc(size);
+void *PyDataMemType_CallocFunc(size_t nelem, size_t elsize) {
+	return inaccel_alloc(nelem * elsize);
 }
 
 __attribute__ ((visibility ("default")))
-void PyDataMem_FreeFunc(void *ptr, size_t size) {
+void PyDataMemType_FreeFunc(void *ptr, size_t size) {
 	inaccel_free(ptr);
 }
 
 __attribute__ ((visibility ("default")))
-void *PyDataMem_ReallocFunc(void *ptr, size_t size) {
-	return inaccel_realloc(ptr, size);
+void *PyDataMemType_MallocFunc(size_t size) {
+	return inaccel_alloc(size);
 }
 
 __attribute__ ((visibility ("default")))
-void *PyDataMem_ZeroedAllocFunc(size_t nelems, size_t elsize) {
-	return inaccel_alloc(nelems * elsize);
+void *PyDataMemType_ReallocFunc(void *ptr, size_t new_size) {
+	return inaccel_realloc(ptr, new_size);
 }

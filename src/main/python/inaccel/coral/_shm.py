@@ -1,18 +1,19 @@
-from numpy_allocator import base_allocator as _base_allocator
 from . import _library
+
+import numpy_allocator as _numpy_allocator
 
 _c = _library.load('coral-api', __file__)
 
 
-class inaccel_allocator(metaclass=_base_allocator):
+class inaccel_allocator(metaclass=_numpy_allocator.type):
 
-    _alloc_ = _c.PyDataMem_AllocFunc
+    _calloc_ = _c.PyDataMemType_CallocFunc
 
-    _free_ = _c.PyDataMem_FreeFunc
+    _free_ = _c.PyDataMemType_FreeFunc
 
-    _realloc_ = _c.PyDataMem_ReallocFunc
+    _malloc_ = _c.PyDataMemType_MallocFunc
 
-    _zeroed_alloc_ = _c.PyDataMem_ZeroedAllocFunc
+    _realloc_ = _c.PyDataMemType_ReallocFunc
 
 
 allocator = inaccel_allocator

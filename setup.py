@@ -15,9 +15,9 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     license='Apache-2.0',
     keywords=[
@@ -36,7 +36,7 @@ setup(
     install_requires=[
         'numpy-allocator',
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     namespace_packages=[
         'inaccel',
     ],

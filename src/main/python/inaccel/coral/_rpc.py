@@ -1,5 +1,5 @@
 from . import _library
-from ._shm import allocator as _allocator
+from . import _shm
 
 import concurrent.futures as _futures
 import ctypes as _ctypes
@@ -69,7 +69,7 @@ class request:
             _index = self._index
 
         if isinstance(value, _numpy.ndarray):
-            if _allocator.handles(value):
+            if _shm.allocator.handles(value):
                 error = _c.inaccel_request_arg_array(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
             else:
                 error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
