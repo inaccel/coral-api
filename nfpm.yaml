@@ -13,6 +13,8 @@ overrides:
       src: src/main/cpp/headers
     - dst: /usr/lib/libcoral-api.so
       src: libcoral-api.so
+    - dst: /usr/share/pkgconfig/coral-api.pc
+      src: coral-api.pc
   rpm:
     contents:
     - dst: /usr/include/inaccel
@@ -21,6 +23,8 @@ overrides:
       src: src/main/cpp/headers
     - dst: /usr/lib64/libcoral-api.so
       src: libcoral-api.so
+    - dst: /usr/share/pkgconfig/coral-api.pc
+      src: coral-api.pc
 release: ${RELEASE}
 vendor: InAccel
 version: 2.0.0
