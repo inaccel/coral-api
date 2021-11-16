@@ -25,6 +25,9 @@ setup(
         'Coral',
         'API',
     ],
+    platforms=[
+        'Linux',
+    ],
     package_dir={
         '': 'src/main/python',
     },
