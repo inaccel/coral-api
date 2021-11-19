@@ -1,8 +1,7 @@
-version: '3'
 services:
   make:
+    build: .
     entrypoint: make
-    image: inaccel/buildpack-deps:grpc
     user: ${UID:-0}:${GID:-0}
     volumes:
     - .:/workspace
