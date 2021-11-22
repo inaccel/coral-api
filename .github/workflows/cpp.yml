@@ -1,17 +1,29 @@
-name: cpp
-on: workflow_dispatch
+name: Release C++
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: VERSION
+        required: true
 jobs:
   pipeline:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Build library (Core)
-      uses: docker://inaccel/buildpack-deps:grpc
       with:
-        entrypoint: make
-        args: |
-          libcoral-api.so
+        fetch-depth: 0
+    - name: Fetch Core library
+      run: |
+        version=${{ github.event.inputs.version }}
+        wget https://github.com/inaccel/coral-api/releases/download/v${version%.*}/libcoral-api.so
+    - name: Update (local) C++ version
+      run: |
+        scripts/version/cpp.sh ${{ github.event.inputs.version }}
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git commit --all --allow-empty --message 'C++ API v${{ github.event.inputs.version }}'
+        git tag cpp-v${{ github.event.inputs.version }}
     - name: Package (Debian)
       uses: docker://goreleaser/nfpm
       with:
@@ -44,3 +56,6 @@ jobs:
         distro: any-distro
         release: any-version
         file: '*.rpm'
+    - name: Update (remote) C++ version
+      run: |
+        git push --atomic origin : cpp-v${{ github.event.inputs.version }}

@@ -1,4 +1,4 @@
-name: gh-pages
+name: Documentation
 on:
   push:
     branches:

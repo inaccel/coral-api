@@ -1,17 +1,29 @@
-name: python
-on: workflow_dispatch
+name: Release Python
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: VERSION
+        required: true
 jobs:
   pipeline:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Build library (Core)
-      uses: docker://inaccel/buildpack-deps:grpc
       with:
-        entrypoint: make
-        args: |
-          src/main/python/inaccel/coral/native/libcoral-api.so
+        fetch-depth: 0
+    - name: Fetch Core library
+      run: |
+        version=${{ github.event.inputs.version }}
+        wget --directory-prefix src/main/python/inaccel/coral/native https://github.com/inaccel/coral-api/releases/download/v${version%.*}/libcoral-api.so
+    - name: Update (local) Python version
+      run: |
+        scripts/version/python.sh ${{ github.event.inputs.version }}
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git commit --all --allow-empty --message 'Python API v${{ github.event.inputs.version }}'
+        git tag python-v${{ github.event.inputs.version }}
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -25,3 +37,6 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI }}
+    - name: Update (remote) Python version
+      run: |
+        git push --atomic origin : python-v${{ github.event.inputs.version }}

@@ -1,0 +1,36 @@
+name: Release C (Core)
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: VERSION
+        required: true
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Build Core library
+      run: |
+        docker-compose run make
+    - name: Update C (Core) version
+      run: |
+        scripts/version/c.sh ${{ github.event.inputs.version }}
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git commit --all --allow-empty --message 'C (Core) API v${{ github.event.inputs.version }}'
+        git tag v${{ github.event.inputs.version }}
+        git push --atomic origin : v${{ github.event.inputs.version }}
+    - name: GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body: |
+          This is release ${{ github.event.inputs.version }} of Coral C (Core) API.
+
+          For Coral API documentation, see [setup.inaccel.com/coral-api](https://setup.inaccel.com/coral-api). For previous releases, see [Releases](https://github.com/inaccel/coral-api/releases).
+        files: libcoral-api.so
+        name: Release v${{ github.event.inputs.version }}
+        tag_name: v${{ github.event.inputs.version }}
