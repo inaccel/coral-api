@@ -83,6 +83,77 @@ This guide gets you started with Coral API in Python with a simple working
 example.
 {{< /lang >}}
 
+## Get InAccel Coral API
+
+{{< lang c >}}
+In the C world, there’s no universally accepted standard for managing project
+dependencies. You need to install Coral API package before building and running
+this quick start’s example.
+
+> For Debian-based installations:
+
+```shell
+apt install coral-api
+```
+
+> For RPM-based installations:
+
+```shell
+yum install coral-api
+```
+
+Before you install Coral API package for the first time on a new host machine,
+you need to set up the InAccel repository. Afterward, you can install and update
+Coral API from the repository.
+
+`curl -sS https://setup.inaccel.com/repository | sh`
+{{< /lang >}}
+
+{{< lang cpp >}}
+In the C++ world, there’s no universally accepted standard for managing project
+dependencies. You need to install Coral API package before building and running
+this quick start’s example.
+
+> For Debian-based installations:
+
+```shell
+apt install coral-api
+```
+
+> For RPM-based installations:
+
+```shell
+yum install coral-api
+```
+
+Before you install Coral API package for the first time on a new host machine,
+you need to set up the InAccel repository. Afterward, you can install and update
+Coral API from the repository.
+
+`curl -sS https://setup.inaccel.com/repository | sh`
+{{< /lang >}}
+
+{{< lang java >}}
+Coral API artifacts are hosted in
+[Maven Central](https://search.maven.org/search?q=g:com.inaccel%20AND%20a:coral-api).
+You can add a Gradle/Maven dependency with the following coordinates:
+
+```
+groupId: com.inaccel
+artifactId: coral-api
+version: X.Y.Z
+```
+{{< /lang >}}
+
+{{< lang python >}}
+Coral API is now available in [PyPI](https://pypi.org/project/coral-api). To
+install just run:
+
+```shell
+pip install coral-api
+```
+{{< /lang >}}
+
 ## Example program
 
 ```c
@@ -409,7 +480,7 @@ python src/test/python/example.py
 
 | Requirements |
 | ------------ |
-| python 3.7+  |
+| python 3.8+  |
 {{< /lang >}}
 
 Congratulations! You’ve just run an accelerated application with Coral.
