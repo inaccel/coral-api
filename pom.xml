@@ -23,16 +23,8 @@
 
 	<developers>
 		<developer>
-			<name>Elias Koromilas</name>
-			<email>elias@inaccel.com</email>
-			<organization>InAccel</organization>
-			<organizationUrl>https://github.com/inaccel</organizationUrl>
-		</developer>
-		<developer>
-			<name>John Stamelos</name>
-			<email>john@inaccel.com</email>
-			<organization>InAccel</organization>
-			<organizationUrl>https://github.com/inaccel</organizationUrl>
+			<name>InAccel</name>
+			<email>info@inaccel.com</email>
 		</developer>
 	</developers>
 
