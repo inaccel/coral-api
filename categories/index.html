@@ -1,0 +1,422 @@
+<!doctype html><html lang=en>
+<head>
+<meta charset=utf-8>
+<meta content="IE=edge,chrome=1" http-equiv=x-ua-compatible>
+<meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Categories</title>
+<link href=/coral-api/styles/screen.min.64d948537aaece948d8ce1e9da1c407b9d03d8caa17e8487863854829c9760e8.css rel=stylesheet media=screen integrity="sha256-ZNlIU3quzpSNjOHp2hxAe50D2MqhfoSHhjhUgpyXYOg=">
+<link href=/coral-api/styles/print.min.8b80360f11d7a4d3700551c7e047f079c088a3b237f2795d1dc6e171e8267387.css rel=stylesheet media=print integrity="sha256-i4A2DxHXpNNwBVHH4EfwecCIo7I38nldHcbhcegmc4c=">
+<script src=/coral-api/js/all.min.5363939a0ccd2e5b54d3860315106463119e19a2339a0bd018a5afa307fe0160.js integrity="sha256-U2OTmgzNLltU04YDFRBkYxGeGaIzmgvQGKWvowf+AWA="></script>
+</head>
+<body class=index data-languages='[ "c" ,  "cpp" ,  "java" ,  "python" ]'>
+<a href=# id=nav-button>
+<span>
+NAV
+<img src=/coral-api/images/navbar.png>
+</span>
+</a>
+<div class=toc-wrapper>
+<img src=/coral-api/images/logo.svg class=logo>
+<div class=lang-selector>
+<a href=# data-language-name=c>C (Core)</a>
+<a href=# data-language-name=cpp>C++</a>
+<a href=# data-language-name=java>Java</a>
+<a href=# data-language-name=python>Python</a>
+</div>
+<div class=search>
+<input type=search class=search id=input-search placeholder=Search>
+</div>
+<ul class=search-results></ul>
+<ul id=toc class=toc-list-h1>
+<li>
+<a href=#introduction-to-coral class="toc-h1 toc-link" data-title="Introduction to Coral">
+Introduction to Coral
+</a>
+<ul class=toc-list-h2>
+<li>
+<a href=#overview class="toc-h2 toc-link" data-title=Overview>
+Overview
+</a>
+</li>
+</ul>
+</li>
+<li>
+<a href=#core-concepts-architecture-and-lifecycle class="toc-h1 toc-link" data-title="Core concepts, architecture and lifecycle">
+Core concepts, architecture and lifecycle
+</a>
+<ul class=toc-list-h2>
+<li>
+<a href=#using-the-api class="toc-h2 toc-link" data-title="Using the API">
+Using the API
+</a>
+</li>
+<li>
+<a href=#rpc-life-cycle class="toc-h2 toc-link" data-title="RPC life cycle">
+RPC life cycle
+</a>
+</li>
+</ul>
+</li>
+<li>
+<a href=#quick-start class="toc-h1 toc-link" data-title="Quick start">
+Quick start
+</a>
+<ul class=toc-list-h2>
+<li>
+<a href=#get-inaccel-coral-api class="toc-h2 toc-link" data-title="Get InAccel Coral API">
+Get InAccel Coral API
+</a>
+</li>
+<li>
+<a href=#example-program class="toc-h2 toc-link" data-title="Example program">
+Example program
+</a>
+</li>
+<li>
+<a href=#supported-argument-types class="toc-h2 toc-link" data-title="Supported argument types">
+Supported argument types
+</a>
+</li>
+<li>
+<a href=#defining-the-request class="toc-h2 toc-link" data-title="Defining the request">
+Defining the request
+</a>
+</li>
+<li>
+<a href=#submit-the-request class="toc-h2 toc-link" data-title="Submit the request">
+Submit the request
+</a>
+</li>
+<li>
+<a href=#wait-for-the-response class="toc-h2 toc-link" data-title="Wait for the response">
+Wait for the response
+</a>
+</li>
+<li>
+<a href=#try-it-out class="toc-h2 toc-link" data-title="Try it out!">
+Try it out!
+</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class=page-wrapper>
+<div class=dark-box></div>
+<div class=content>
+<h1 id=introduction-to-coral>Introduction to Coral</h1><p>This page introduces you to Coral and its Application Programming Interface
+(API). If you’re new to Coral concepts, continue reading! If you just want to
+dive in and see Coral API in action first, select a language and try its
+<a href=#quick-start>Quick start</a>.</p>
+<h2 id=overview>Overview</h2><p>In Coral, a client application can directly call an accelerator on a local
+hardware resource as if it were a common software function, making it easier for
+you to accelerate distributed applications and services. As in many RPC systems,
+Coral is based around the idea of defining a platform, specifying the
+accelerators that can be called remotely with their arguments and configuration
+parameters. On the server side, Coral dynamically implements an interface and
+runs a server to handle and respond to client calls. On the client side, the
+application just requests the accelerators available at the server. Coral relies
+on shared memory namespaces and uses gRPC as its underlying message interchange
+system.</p>
+<p><img src=images/architecture.svg alt=Architecture></p>
+<p>Coral clients and servers can run and talk to each other in a variety of
+environments - from bare-metal Linux servers to containers inside a Kubernetes
+cluster - and applications can be written in any of Coral API’s supported
+languages. So, for example, you can easily use the same accelerator with a Coral
+client in C++ or Python.</p>
+<h1 id=core-concepts-architecture-and-lifecycle>Core concepts, architecture and lifecycle</h1><p>Coral is a fast and general-purpose accelerator orchestrator. It is shipped with
+high-level APIs in C/C++, Java, and Python, and a unified engine that supports
+every heterogeneous multi-accelerator platform.</p>
+<h2 id=using-the-api>Using the API</h2><p>On the client side, the application instantiates local objects known as requests
+that correspond to accelerators available at the server. The application can
+then just populate those requests with data in familiar data types and
+structures and submit them - Coral API looks after wrapping the arguments for
+the accelerator in the appropriate format, sending the request(s) to the server
+and returning the server’s response(s).</p>
+<p>In many scenarios it’s useful to be able to start RPCs without blocking the
+current thread. The Coral programming API in all languages comes in an
+asynchronous flavor. You can find out more in each language’s tutorial.</p>
+<h2 id=rpc-life-cycle>RPC life cycle</h2><p>In this section, you’ll take a closer look at what happens when a Coral client
+requests an accelerator. Let&rsquo;s consider the simplest type of RPC where the
+client sends a single request and gets back a single response.</p>
+<ol>
+<li>
+<p>Once the client submits an accelerator request, Coral is notified that the
+RPC has been invoked with the client’s metadata for this request, the
+accelerator name, and the specified arguments.</p>
+</li>
+<li>
+<p>Once the server has the client’s request, it does whatever work is necessary
+to run the accelerator and populate a response. The response is then returned to
+the client together with status details (status code) and optional trailing
+messages.</p>
+</li>
+<li>
+<p>Then the client gets the response and checks if the response status is OK,
+which completes the call on the client side.</p>
+</li>
+</ol>
+<h1 id=quick-start>Quick start</h1><div class="lang-specific c content"><area><p>This guide gets you started with Coral API in C with a simple working example.</p>
+</div>
+<div class="lang-specific cpp content"><area><p>This guide gets you started with Coral API in C++ with a simple working example.</p>
+</div>
+<div class="lang-specific java content"><area><p>This guide gets you started with Coral API in Java with a simple working
+example.</p>
+</div>
+<div class="lang-specific python content"><area><p>This guide gets you started with Coral API in Python with a simple working
+example.</p>
+</div>
+<h2 id=get-inaccel-coral-api>Get InAccel Coral API</h2><div class="lang-specific c content"><area><p>In the C world, there’s no universally accepted standard for managing project
+dependencies. You need to install Coral API package before building and running
+this quick start’s example.</p>
+<blockquote>
+<p>For Debian-based installations:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>apt install coral-api
+</code></pre></div><blockquote>
+<p>For RPM-based installations:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>yum install coral-api
+</code></pre></div><p>Before you install Coral API package for the first time on a new host machine,
+you need to set up the InAccel repository. Afterward, you can install and update
+Coral API from the repository.</p>
+<p><code>curl -sS https://setup.inaccel.com/repository | sh</code></p>
+</div>
+<div class="lang-specific cpp content"><area><p>In the C++ world, there’s no universally accepted standard for managing project
+dependencies. You need to install Coral API package before building and running
+this quick start’s example.</p>
+<blockquote>
+<p>For Debian-based installations:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>apt install coral-api
+</code></pre></div><blockquote>
+<p>For RPM-based installations:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>yum install coral-api
+</code></pre></div><p>Before you install Coral API package for the first time on a new host machine,
+you need to set up the InAccel repository. Afterward, you can install and update
+Coral API from the repository.</p>
+<p><code>curl -sS https://setup.inaccel.com/repository | sh</code></p>
+</div>
+<div class="lang-specific java content"><area><p>Coral API artifacts are hosted in
+<a href="https://search.maven.org/search?q=g:com.inaccel%20AND%20a:coral-api">Maven Central</a>.
+You can add a Gradle/Maven dependency with the following coordinates:</p>
+<pre tabindex=0><code>groupId: com.inaccel
+artifactId: coral-api
+version: X.Y.Z
+</code></pre></div>
+<div class="lang-specific python content"><area><p>Coral API is now available in <a href=https://pypi.org/project/coral-api>PyPI</a>. To
+install just run:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>pip install coral-api
+</code></pre></div></div>
+<h2 id=example-program>Example program</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;inaccel/coral.h&gt;</span><span style=color:#75715e>
+</span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;inaccel/coral&gt;</span><span style=color:#75715e>
+</span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>import</span> com.inaccel.coral.*<span style=color:#f92672>;</span>
+
+<span style=color:#f92672>import</span> io.netty.buffer.ByteBuf<span style=color:#f92672>;</span>
+
+<span style=color:#f92672>import</span> java.util.concurrent.Future<span style=color:#f92672>;</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> inaccel.coral <span style=color:#66d9ef>as</span> inaccel
+<span style=color:#f92672>import</span> numpy <span style=color:#66d9ef>as</span> np
+</code></pre></div><div class="lang-specific c content"><area><p>In this section, we’ll look at creating a C client for a vector addition
+accelerator.</p>
+<p>You can see our complete example client code in
+<a href=https://github.com/inaccel/coral-api/blob/master/src/test/c/example.c>coral-api/src/test/c/example.c</a>.</p>
+</div>
+<div class="lang-specific cpp content"><area><p>In this section, we’ll look at creating a C++ client for a vector addition
+accelerator.</p>
+<p>You can see our complete example client code in
+<a href=https://github.com/inaccel/coral-api/blob/master/src/test/cpp/example.cpp>coral-api/src/test/cpp/example.cpp</a>.</p>
+</div>
+<div class="lang-specific java content"><area><p>In this section, we’ll look at creating a Java client for a vector addition
+accelerator.</p>
+<p>You can see our complete example client code in
+<a href=https://github.com/inaccel/coral-api/blob/master/src/test/java/Example.java>coral-api/src/test/java/Example.java</a>.</p>
+</div>
+<div class="lang-specific python content"><area><p>In this section, we’ll look at creating a Python client for a vector addition
+accelerator.</p>
+<p>You can see our complete example client code in
+<a href=https://github.com/inaccel/coral-api/blob/master/src/test/python/example.py>coral-api/src/test/python/example.py</a>.</p>
+</div>
+<h2 id=supported-argument-types>Supported argument types</h2><p>An argument can be a scalar data type (single value; such as an int, a float, or
+a user-defined structure), or an array data type (one-dimensional collection of
+values).</p>
+<h3 id=scalar-arguments>Scalar arguments</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	<span style=color:#66d9ef>int</span> size <span style=color:#f92672>=</span> <span style=color:#ae81ff>1024</span>;
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>	<span style=color:#66d9ef>int</span> size <span style=color:#f92672>=</span> <span style=color:#ae81ff>1024</span>;
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>		<span style=color:#66d9ef>int</span> size <span style=color:#f92672>=</span> 1024<span style=color:#f92672>;</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>size <span style=color:#f92672>=</span> np<span style=color:#f92672>.</span>int32(<span style=color:#ae81ff>1024</span>)
+</code></pre></div><p>For example, a 32-bit integer value.</p>
+<h3 id=array-arguments>Array arguments</h3><p>Shared memory objects stored as a block of contiguous memory and used to hold
+data in a Coral program. Coral API maintains memory consistency in a
+coarse-grained fashion in regions of arrays. Memory consistency is guaranteed at
+synchronization points.</p>
+<p>To allocate a zero-initialized array that can be shared by the host and all
+accelerators, use the language-native InAccel allocator:</p>
+<blockquote>
+<p>allocate</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	<span style=color:#66d9ef>float</span> <span style=color:#f92672>*</span>a <span style=color:#f92672>=</span> (<span style=color:#66d9ef>float</span> <span style=color:#f92672>*</span>) inaccel_alloc(size <span style=color:#f92672>*</span> <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>float</span>));
+	<span style=color:#66d9ef>float</span> <span style=color:#f92672>*</span>b <span style=color:#f92672>=</span> (<span style=color:#66d9ef>float</span> <span style=color:#f92672>*</span>) inaccel_alloc(size <span style=color:#f92672>*</span> <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>float</span>));
+	<span style=color:#66d9ef>float</span> <span style=color:#f92672>*</span>c <span style=color:#f92672>=</span> (<span style=color:#66d9ef>float</span> <span style=color:#f92672>*</span>) inaccel_alloc(size <span style=color:#f92672>*</span> <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>float</span>));
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>	inaccel<span style=color:#f92672>::</span>vector<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>float</span><span style=color:#f92672>&gt;</span> a(size), b(size), c(size);
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>		ByteBuf a <span style=color:#f92672>=</span> InAccelByteBufAllocator<span style=color:#f92672>.</span><span style=color:#a6e22e>DEFAULT</span><span style=color:#f92672>.</span><span style=color:#a6e22e>buffer</span><span style=color:#f92672>(</span>size <span style=color:#f92672>*</span> Float<span style=color:#f92672>.</span><span style=color:#a6e22e>BYTES</span><span style=color:#f92672>);</span>
+		ByteBuf b <span style=color:#f92672>=</span> InAccelByteBufAllocator<span style=color:#f92672>.</span><span style=color:#a6e22e>DEFAULT</span><span style=color:#f92672>.</span><span style=color:#a6e22e>buffer</span><span style=color:#f92672>(</span>size <span style=color:#f92672>*</span> Float<span style=color:#f92672>.</span><span style=color:#a6e22e>BYTES</span><span style=color:#f92672>);</span>
+		ByteBuf c <span style=color:#f92672>=</span> InAccelByteBufAllocator<span style=color:#f92672>.</span><span style=color:#a6e22e>DEFAULT</span><span style=color:#f92672>.</span><span style=color:#a6e22e>buffer</span><span style=color:#f92672>(</span>size <span style=color:#f92672>*</span> Float<span style=color:#f92672>.</span><span style=color:#a6e22e>BYTES</span><span style=color:#f92672>);</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#66d9ef>with</span> inaccel<span style=color:#f92672>.</span>allocator:
+    a <span style=color:#f92672>=</span> np<span style=color:#f92672>.</span>ndarray(size, dtype<span style=color:#f92672>=</span>np<span style=color:#f92672>.</span>float32)
+    b <span style=color:#f92672>=</span> np<span style=color:#f92672>.</span>ndarray(size, dtype<span style=color:#f92672>=</span>np<span style=color:#f92672>.</span>float32)
+    c <span style=color:#f92672>=</span> np<span style=color:#f92672>.</span>ndarray(size, dtype<span style=color:#f92672>=</span>np<span style=color:#f92672>.</span>float32)
+</code></pre></div><div class="lang-specific c content"><area><p>The array can be manipulated much as one would with any block of memory in C.</p>
+</div>
+<div class="lang-specific cpp content"><area><p>The array (<code>vector</code> object) can be manipulated much as one would with any block
+of memory in C++.</p>
+</div>
+<div class="lang-specific java content"><area><p>The array (<code>ByteBuf</code> object) can be manipulated much as one would with any block
+of memory in Java.</p>
+</div>
+<div class="lang-specific python content"><area><p>The array (<code>ndarray</code> object) can be manipulated much as one would with any block
+of memory in Python.</p>
+</div>
+<h2 id=defining-the-request>Defining the request</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	inaccel_request request <span style=color:#f92672>=</span> inaccel_request_create(<span style=color:#e6db74>&#34;vector.addition&#34;</span>);
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>	inaccel<span style=color:#f92672>::</span>request request(<span style=color:#e6db74>&#34;vector.addition&#34;</span>);
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>		InAccel<span style=color:#f92672>.</span><span style=color:#a6e22e>Request</span> request <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> InAccel<span style=color:#f92672>.</span><span style=color:#a6e22e>Request</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;vector.addition&#34;</span><span style=color:#f92672>);</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>request <span style=color:#f92672>=</span> inaccel<span style=color:#f92672>.</span>request(<span style=color:#e6db74>&#39;vector.addition&#39;</span>)
+</code></pre></div><p>Our next step is to instantiate the accelerator request and define the argument
+list. To define a request, you specify the name of the target accelerator.</p>
+<p>For this example, consider the following accelerator:</p>
+<p><code>void vadd(const float *a, const float *b, float *c, int size) { ... }</code></p>
+<p>To submit a request, the accelerator arguments must be set. To set the argument
+value for a specific argument of an accelerator, call:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	inaccel_request_arg_array(request, size <span style=color:#f92672>*</span> <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>float</span>), a, <span style=color:#ae81ff>0</span>);
+	inaccel_request_arg_array(request, size <span style=color:#f92672>*</span> <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>float</span>), b, <span style=color:#ae81ff>1</span>);
+	inaccel_request_arg_array(request, size <span style=color:#f92672>*</span> <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>float</span>), c, <span style=color:#ae81ff>2</span>);
+	inaccel_request_arg_scalar(request, <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>int</span>), <span style=color:#f92672>&amp;</span>size, <span style=color:#ae81ff>3</span>);
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>	request.arg(a).arg(b).arg(c).arg(size);
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>		request<span style=color:#f92672>.</span><span style=color:#a6e22e>arg</span><span style=color:#f92672>(</span>a<span style=color:#f92672>).</span><span style=color:#a6e22e>arg</span><span style=color:#f92672>(</span>b<span style=color:#f92672>).</span><span style=color:#a6e22e>arg</span><span style=color:#f92672>(</span>c<span style=color:#f92672>).</span><span style=color:#a6e22e>arg</span><span style=color:#f92672>(</span>size<span style=color:#f92672>);</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>request<span style=color:#f92672>.</span>arg(a)<span style=color:#f92672>.</span>arg(b)<span style=color:#f92672>.</span>arg(c)<span style=color:#f92672>.</span>arg(size)
+</code></pre></div><p>If the accelerator argument is declared to be a pointer of a built-in, or a
+user-defined type, the specified argument value must be an appropriate array
+region. For all other accelerator arguments (scalars), it must be a reference to
+the actual data.</p>
+<aside class=notice>Argument index values for <code>vadd</code> will be 0 for <code>a</code>, 1 for <code>b</code>, 2 for <code>c</code> and 3
+for <code>size</code>.</aside>
+<h2 id=submit-the-request>Submit the request</h2><p>To enqueue a request to execute an accelerator, call the <code>submit</code> function:</p>
+<div class="lang-specific c content"><area><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	inaccel_response response <span style=color:#f92672>=</span> inaccel_response_create();
+</code></pre></div></div>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	inaccel_submit(request, response);
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>	std<span style=color:#f92672>::</span>future<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>void</span><span style=color:#f92672>&gt;</span> response <span style=color:#f92672>=</span> inaccel<span style=color:#f92672>::</span>submit(request);
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>		Future<span style=color:#f92672>&lt;</span>Void<span style=color:#f92672>&gt;</span> response <span style=color:#f92672>=</span> InAccel<span style=color:#f92672>.</span><span style=color:#a6e22e>submit</span><span style=color:#f92672>(</span>request<span style=color:#f92672>);</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>response <span style=color:#f92672>=</span> inaccel<span style=color:#f92672>.</span>submit(request)
+</code></pre></div><p>The response object is used to track the status of a request.</p>
+<h2 id=wait-for-the-response>Wait for the response</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	inaccel_response_wait(response);
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>	response.get();
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>		response<span style=color:#f92672>.</span><span style=color:#a6e22e>get</span><span style=color:#f92672>();</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>response<span style=color:#f92672>.</span>result()
+</code></pre></div><p>This function waits on the host thread for requests identified by response
+objects to complete. The responses act as synchronization points.</p>
+<div class="lang-specific c content"><area><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	inaccel_response_release(response);
+
+	inaccel_request_release(request);
+</code></pre></div><blockquote>
+<p>free</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>	inaccel_free(c);
+	inaccel_free(b);
+	inaccel_free(a);
+</code></pre></div></div>
+<div class="lang-specific java content"><area><blockquote>
+<p>free</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>		c<span style=color:#f92672>.</span><span style=color:#a6e22e>release</span><span style=color:#f92672>();</span>
+		b<span style=color:#f92672>.</span><span style=color:#a6e22e>release</span><span style=color:#f92672>();</span>
+		a<span style=color:#f92672>.</span><span style=color:#a6e22e>release</span><span style=color:#f92672>();</span>
+</code></pre></div></div>
+<h2 id=try-it-out>Try it out!</h2><div class="lang-specific c content"><area><blockquote>
+<p>Compile the example:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>gcc src/test/c/example.c -lcoral-api
+</code></pre></div><blockquote>
+<p>Run the example:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>./a.out
+</code></pre></div><table>
+<thead>
+<tr>
+<th>Requirements</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gcc</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="lang-specific cpp content"><area><blockquote>
+<p>Compile the example:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>g++ src/test/cpp/example.cpp -lcoral-api -pthread
+</code></pre></div><blockquote>
+<p>Run the example:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>./a.out
+</code></pre></div><table>
+<thead>
+<tr>
+<th>Requirements</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>c++ 11+, gcc</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="lang-specific java content"><area><blockquote>
+<p>Compile and run the example:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>gradle example
+</code></pre></div><table>
+<thead>
+<tr>
+<th>Requirements</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gradle, java 8+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="lang-specific python content"><area><blockquote>
+<p>Run the example:</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>python src/test/python/example.py
+</code></pre></div><table>
+<thead>
+<tr>
+<th>Requirements</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>python 3.8+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Congratulations! You’ve just run an accelerated application with Coral.</p>
+</div>
+<div class=dark-box>
+<div class=lang-selector>
+<a href=# data-language-name=c>C (Core)</a>
+<a href=# data-language-name=cpp>C++</a>
+<a href=# data-language-name=java>Java</a>
+<a href=# data-language-name=python>Python</a>
+</div>
+</div>
+</div>
+</body>
+</html>
