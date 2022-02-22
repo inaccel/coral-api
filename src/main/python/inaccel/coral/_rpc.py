@@ -63,10 +63,10 @@ class request:
         return s.decode()
 
     def arg(self, value, index=None):
-        if index:
-            _index = index
-        else:
+        if index is None:
             _index = self._index
+        else:
+            _index = index
 
         if isinstance(value, _numpy.ndarray):
             if _shm.allocator.handles(value):
@@ -86,7 +86,7 @@ class request:
         else:
             raise ValueError()
 
-        if not index:
+        if index is None:
             self._index += 1
 
         return self
