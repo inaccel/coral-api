@@ -293,11 +293,6 @@ int inaccel_request_arg_array(inaccel_request request, size_t size, const void *
 		return -1;
 	}
 
-	if (slice->cube->pid != __process()) {
-		errno = EACCES;
-		return -1;
-	}
-
 	try {
 		inaccel::Arguments *__arguments = request->grpc.mutable_arguments();
 
@@ -604,8 +599,7 @@ int inaccel_submit(inaccel_request request, inaccel_response response) {
 
 				slice_t *slice = (slice_t *) __array->context();
 
-				if (slice->cube->pid != __process()) {
-					errno = EACCES;
+				if (__attach(slice)) {
 					return -1;
 				}
 
@@ -613,10 +607,6 @@ int inaccel_submit(inaccel_request request, inaccel_response response) {
 				__array->set_offset(slice->offset);
 				__array->set_size(slice->size);
 				__array->set_version(slice->version);
-
-				if (__attach(slice)) {
-					return -1;
-				}
 			}
 		}
 

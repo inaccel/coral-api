@@ -11,12 +11,12 @@ RUN yum install --assumeyes \
         which \
  && yum clean all
 
-ARG CMAKE_VERSION=3.21.4
+ARG CMAKE_VERSION=3.23.1
 RUN wget --output-document=cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
  && sh cmake.sh --prefix=/usr --skip-license \
  && rm --force cmake.sh
 
-ARG OPENSSL_VERSION=1.1.1
+ARG OPENSSL_VERSION=1.1.1n
 RUN wget --directory-prefix=/usr/local/openssl --no-check-certificate https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
  && cd /usr/local/openssl \
  && tar --extract --file=openssl-${OPENSSL_VERSION}.tar.gz \
