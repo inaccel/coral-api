@@ -3,6 +3,7 @@ from setuptools import setup
 setup(
     name='coral-api',
     description='Enterprise-Grade Accelerator Orchestration',
+    long_description_content_type='text/markdown',
     author='InAccel',
     author_email='info@inaccel.com',
     url='https://inaccel.com',

@@ -91,6 +91,50 @@ class request:
 
         return self
 
+    def arg_array(self, value, index=None):
+        if index is None:
+            _index = self._index
+        else:
+            _index = index
+
+        if isinstance(value, _numpy.ndarray):
+            error = _c.inaccel_request_arg_array(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
+            if error:
+                raise RuntimeError(_os.strerror(_ctypes.get_errno()))
+        else:
+            raise ValueError()
+
+        if index is None:
+            self._index += 1
+
+        return self
+
+    def arg_scalar(self, value, index=None):
+        if index is None:
+            _index = self._index
+        else:
+            _index = index
+
+        if isinstance(value, _numpy.ndarray):
+            error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
+            if error:
+                raise RuntimeError(_os.strerror(_ctypes.get_errno()))
+        elif isinstance(value, _numpy.bool):
+            error = _c.inaccel_request_arg_scalar(self._c, 1, value.to_bytes(1, 'little'), _index)
+            if error:
+                raise RuntimeError(_os.strerror(_ctypes.get_errno()))
+        elif isinstance(value, (_numpy.integer, _numpy.floating, _numpy.complexfloating)):
+            error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.newbyteorder('L').tobytes(), _index)
+            if error:
+                raise RuntimeError(_os.strerror(_ctypes.get_errno()))
+        else:
+            raise ValueError()
+
+        if index is None:
+            self._index += 1
+
+        return self
+
 
 def submit(request):
     cresponse = _c.inaccel_response_create()
