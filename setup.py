@@ -42,7 +42,4 @@ setup(
         'numpy-allocator',
     ],
     python_requires='>=3.8',
-    namespace_packages=[
-        'inaccel',
-    ],
 )
