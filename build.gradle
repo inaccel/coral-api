@@ -15,5 +15,5 @@ repositories {
 }
 
 dependencies {
-	implementation 'com.inaccel:coral-api:2.1.0'
+	implementation 'com.inaccel:coral-api:2.2.0'
 }
