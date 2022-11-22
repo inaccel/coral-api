@@ -62,9 +62,9 @@ pid_t __process(void);
 
 int __protect(void *addr, size_t size);
 
-void *__realloc(void *old_addr, size_t new_size);
+void *__realloc(void *old_addr, size_t old_size, size_t new_size);
 
-void *__remap(void *old_addr, size_t new_size, int fd);
+void *__remap(void *old_addr, size_t old_size, size_t new_size, int fd);
 
 int __remove(const char *pathname);
 

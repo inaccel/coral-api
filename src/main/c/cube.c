@@ -520,7 +520,7 @@ void *inaccel_realloc(void *addr, size_t new_size) {
 
 					new_size = __ceil_pagesize(new_size);
 
-					void *new_addr = __remap(cube->page.addr, new_size, fd);
+					void *new_addr = __remap(cube->page.addr, cube->page.size, new_size, fd);
 					if (new_addr == MAP_FAILED) {
 						int errsv = errno;
 

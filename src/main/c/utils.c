@@ -112,8 +112,8 @@ int __protect(void *addr, size_t size) {
 	return mprotect(addr, size, PROT_READ);
 }
 
-void *__realloc(void *old_addr, size_t new_size) {
-	void *new_addr = mremap(old_addr, 0, new_size, MREMAP_MAYMOVE);
+void *__realloc(void *old_addr, size_t old_size, size_t new_size) {
+	void *new_addr = mremap(old_addr, old_size, new_size, MREMAP_MAYMOVE);
 	if (new_addr == MAP_FAILED) {
 		return NULL;
 	} else {
@@ -121,9 +121,9 @@ void *__realloc(void *old_addr, size_t new_size) {
 	}
 }
 
-void *__remap(void *old_addr, size_t new_size, int fd) {
+void *__remap(void *old_addr, size_t old_size, size_t new_size, int fd) {
 	if (!ftruncate(fd, new_size)) {
-		return mremap(old_addr, 0, new_size, MREMAP_MAYMOVE);
+		return mremap(old_addr, old_size, new_size, MREMAP_MAYMOVE);
 	} else {
 		return MAP_FAILED;
 	}
