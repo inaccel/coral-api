@@ -39,7 +39,7 @@ setup(
         ],
     },
     install_requires=[
-        'numpy-allocator',
+        'numpy-allocator>=1.2.0',
     ],
     python_requires='>=3.8',
 )
