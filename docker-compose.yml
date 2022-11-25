@@ -1,7 +1,6 @@
 services:
   make:
     build: .
-    entrypoint: make
     user: ${UID:-0}:${GID:-0}
     volumes:
     - .:/workspace
