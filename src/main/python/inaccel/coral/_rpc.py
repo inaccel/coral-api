@@ -75,12 +75,8 @@ class request:
                 error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
             if error:
                 raise RuntimeError(_os.strerror(_ctypes.get_errno()))
-        elif isinstance(value, _numpy.bool):
-            error = _c.inaccel_request_arg_scalar(self._c, 1, value.to_bytes(1, 'little'), _index)
-            if error:
-                raise RuntimeError(_os.strerror(_ctypes.get_errno()))
-        elif isinstance(value, (_numpy.integer, _numpy.floating, _numpy.complexfloating)):
-            error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.newbyteorder('L').tobytes(), _index)
+        elif isinstance(value, _numpy.generic):
+            error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
             if error:
                 raise RuntimeError(_os.strerror(_ctypes.get_errno()))
         else:
@@ -119,12 +115,8 @@ class request:
             error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
             if error:
                 raise RuntimeError(_os.strerror(_ctypes.get_errno()))
-        elif isinstance(value, _numpy.bool):
-            error = _c.inaccel_request_arg_scalar(self._c, 1, value.to_bytes(1, 'little'), _index)
-            if error:
-                raise RuntimeError(_os.strerror(_ctypes.get_errno()))
-        elif isinstance(value, (_numpy.integer, _numpy.floating, _numpy.complexfloating)):
-            error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.newbyteorder('L').tobytes(), _index)
+        elif isinstance(value, _numpy.generic):
+            error = _c.inaccel_request_arg_scalar(self._c, value.nbytes, value.__array_interface__['data'][0], _index)
             if error:
                 raise RuntimeError(_os.strerror(_ctypes.get_errno()))
         else:
