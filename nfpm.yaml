@@ -11,6 +11,8 @@ overrides:
       src: src/main/c/headers
     - dst: /usr/include/inaccel
       src: src/main/cpp/headers
+    - dst: /usr/lib/libcoral-api.a
+      src: libcoral-api.a
     - dst: /usr/lib/libcoral-api.so
       src: libcoral-api.so
     - dst: /usr/share/pkgconfig/coral-api.pc
@@ -21,6 +23,8 @@ overrides:
       src: src/main/c/headers
     - dst: /usr/include/inaccel
       src: src/main/cpp/headers
+    - dst: /usr/lib64/libcoral-api.a
+      src: libcoral-api.a
     - dst: /usr/lib64/libcoral-api.so
       src: libcoral-api.so
     - dst: /usr/share/pkgconfig/coral-api.pc

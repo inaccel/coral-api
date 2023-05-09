@@ -31,6 +31,8 @@ jobs:
           This is release ${{ github.event.inputs.version }} of Coral C (Core) API.
 
           For Coral API documentation, see [setup.inaccel.com/coral-api](https://setup.inaccel.com/coral-api). For previous releases, see [Releases](https://github.com/inaccel/coral-api/releases).
-        files: libcoral-api.so
+        files: |
+          libcoral-api.a
+          libcoral-api.so
         name: Release v${{ github.event.inputs.version }}
         tag_name: v${{ github.event.inputs.version }}

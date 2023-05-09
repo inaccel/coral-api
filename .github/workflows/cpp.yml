@@ -16,6 +16,7 @@ jobs:
     - name: Fetch Core library
       run: |
         version=${{ github.event.inputs.version }}
+        wget https://github.com/inaccel/coral-api/releases/download/v${version%.*}/libcoral-api.a
         wget https://github.com/inaccel/coral-api/releases/download/v${version%.*}/libcoral-api.so
     - name: Update (local) C++ version
       run: |
