@@ -15,12 +15,12 @@ RUN yum install --assumeyes \
 
 SHELL ["scl", "enable", "devtoolset-11"]
 
-ARG CMAKE_VERSION=3.25.0
+ARG CMAKE_VERSION=3.26.3
 RUN wget --output-document=cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
  && sh cmake.sh --prefix=/usr --skip-license \
  && rm --force cmake.sh
 
-ARG OPENSSL_VERSION=1.1.1s
+ARG OPENSSL_VERSION=1.1.1t
 RUN wget --directory-prefix=/usr/local/openssl --no-check-certificate https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
  && cd /usr/local/openssl \
  && tar --extract --file=openssl-${OPENSSL_VERSION}.tar.gz \
@@ -33,7 +33,7 @@ ENV CXX=c++
 
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig
 
-ARG GRPC_VERSION=1.51.0
+ARG GRPC_VERSION=1.51.3
 RUN git clone --branch=v${GRPC_VERSION} --depth=1 --recursive https://github.com/grpc/grpc.git /usr/local/grpc \
  && cd /usr/local/grpc \
  && mkdir cmake/build \
