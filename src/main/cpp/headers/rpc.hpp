@@ -115,7 +115,7 @@ namespace inaccel {
 		}
 
 		template <typename T>
-		request &arg(const typename std::vector<T>::iterator &first, const typename std::vector<T>::iterator &last) {
+		request &arg(const typename std::vector<T>::const_iterator &first, const typename std::vector<T>::const_iterator &last) {
 			arg<T>(first, last, index);
 
 			index++;
@@ -124,7 +124,7 @@ namespace inaccel {
 		}
 
 		template <typename T>
-		request &arg(const typename std::vector<T>::iterator &first, const typename std::vector<T>::iterator &last, unsigned index) {
+		request &arg(const typename std::vector<T>::const_iterator &first, const typename std::vector<T>::const_iterator &last, unsigned index) {
 			int error = inaccel_request_arg_scalar(c, (last - first) * sizeof(T), &(*first), index);
 			if (error) {
 				throw std::runtime_error(std::strerror(errno));
@@ -172,7 +172,7 @@ namespace inaccel {
 		}
 
 		template <typename T>
-		request &arg(const typename inaccel::vector<T>::iterator &first, const typename inaccel::vector<T>::iterator &last) {
+		request &arg(const typename inaccel::vector<T>::const_iterator &first, const typename inaccel::vector<T>::const_iterator &last) {
 			arg<T>(first, last, index);
 
 			index++;
@@ -181,7 +181,7 @@ namespace inaccel {
 		}
 
 		template <typename T>
-		request &arg(const typename inaccel::vector<T>::iterator &first, const typename inaccel::vector<T>::iterator &last, unsigned index) {
+		request &arg(const typename inaccel::vector<T>::const_iterator &first, const typename inaccel::vector<T>::const_iterator &last, unsigned index) {
 			int error = inaccel_request_arg_array(c, (last - first) * sizeof(T), &(*first), index);
 			if (error) {
 				throw std::runtime_error(std::strerror(errno));
@@ -237,7 +237,7 @@ namespace inaccel {
 		}
 
 		template <typename T>
-		request &arg(const typename std::pmr::vector<T>::iterator &first, const typename std::pmr::vector<T>::iterator &last) {
+		request &arg(const typename std::pmr::vector<T>::const_iterator &first, const typename std::pmr::vector<T>::const_iterator &last) {
 			arg<T>(first, last, index);
 
 			index++;
@@ -246,7 +246,7 @@ namespace inaccel {
 		}
 
 		template <typename T>
-		request &arg(const typename std::pmr::vector<T>::iterator &first, const typename std::pmr::vector<T>::iterator &last, unsigned index) {
+		request &arg(const typename std::pmr::vector<T>::const_iterator &first, const typename std::pmr::vector<T>::const_iterator &last, unsigned index) {
 			if (first.get_allocator().resource()->is_equal(*inaccel::pmr::resource())) {
 				int error = inaccel_request_arg_array(c, (last - first) * sizeof(T), &(*first), index);
 				if (error) {
