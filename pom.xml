@@ -39,7 +39,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.1</version>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -94,7 +94,7 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-buffer</artifactId>
-			<version>4.1.92.Final</version>
+			<version>4.1.96.Final</version>
 		</dependency>
 
 		<dependency>
