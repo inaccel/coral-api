@@ -15,12 +15,12 @@ RUN yum install --assumeyes \
 
 SHELL ["scl", "enable", "devtoolset-11"]
 
-ARG CMAKE_VERSION=3.27.1
+ARG CMAKE_VERSION=3.28.2
 RUN wget --output-document=cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
  && sh cmake.sh --prefix=/usr --skip-license \
  && rm --force cmake.sh
 
-ARG OPENSSL_VERSION=1.1.1u
+ARG OPENSSL_VERSION=1.1.1w
 RUN wget --directory-prefix=/usr/local/openssl --no-check-certificate https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
  && cd /usr/local/openssl \
  && tar --extract --file=openssl-${OPENSSL_VERSION}.tar.gz \
