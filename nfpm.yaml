@@ -31,4 +31,4 @@ overrides:
       src: coral-api.pc
 release: ${RELEASE}
 vendor: InAccel
-version: 2.4.0
+version: 2.5.0
